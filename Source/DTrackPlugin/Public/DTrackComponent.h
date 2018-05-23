@@ -28,23 +28,30 @@
 
 #include "CoreMinimal.h"
 #include "DTrackInterface.h"
+
 #include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
+
 #include "DTrackComponent.generated.h"
 
 UCLASS(ClassGroup="Input Controller", meta=(BlueprintSpawnableComponent))
-class DTRACKPLUGIN_API UDTrackComponent : public UActorComponent {
+class DTRACKPLUGIN_API UDTrackComponent 
+	: 
+		// public UActorComponent 
+		public USceneComponent
+{
 
 	GENERATED_UCLASS_BODY()
 
 	public:
 
 		UPROPERTY(EditAnywhere, meta = (DisplayName = "DTrack Server IP", ToolTip = "Enter the IP of your DTrack server host. Hostnames will not work."))
-		FString m_dtrack_server_ip = "127.0.0.1";
+		FString m_dtrack_server_ip = "10.10.8.75";
 
 		UPROPERTY(EditAnywhere, meta = (DisplayName = "DTrack Server Port", ToolTip = "Enter the port your server uses"))
-		uint32  m_dtrack_server_port = 50105;
+		uint32  m_dtrack_server_port = 5000;	// this is actually not the server port (its the client port on windows), whereas the SDK has the server port hardwired into its code...; so @TODO needs to be refactored (name change or something different...)
 
-		UPROPERTY(EditAnywhere, meta = (DisplayName = "DTrack2 Protocol", ToolTip = "Use the TCP command channel based DTrack2 protocol"))
+		UPROPERTY(EditAnywhere, meta = (DisplayName = "DTrack2 Protocol", ToolTip = "Use the TCP command channel based DTrack2 protocol; otherwhise use UDP"))
 		bool    m_dtrack_2 = true;
 
 		UPROPERTY(EditAnywhere, meta = (DisplayName = "DTrack Room Calibration", ToolTip = "Set this according to your DTrack system's room calibration"))
@@ -83,5 +90,7 @@ class DTRACKPLUGIN_API UDTrackComponent : public UActorComponent {
 	private:
 
 		class IDTrackPlugin *m_plugin = nullptr;   //!< will cache that to avoid calling Module getter in every tick
+
+		void checkParentClass();
 
 };

@@ -87,10 +87,18 @@ void FDTrackPlugin::ShutdownModule() {
 
 void FDTrackPlugin::start_up(UDTrackComponent *n_client) {
 
+	UE_LOG(LogTemp, Warning, TEXT("startup of FDTrackPlugin"));
 	if (!m_polling_thread) {
+		UE_LOG(LogTemp, Warning, TEXT("Create new Thread"));
 		m_polling_thread = FDTrackPollThread::start(n_client, this);
 	}
 
+	if (n_client) {
+		UE_LOG(LogTemp, Display, TEXT("Add Client: %s"), *n_client->GetName());
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Client is NULL :(")); 
+	}
 	// on error, the object is created but an error condition set within
 	m_clients.Add(n_client);
 }
@@ -146,6 +154,7 @@ void FDTrackPlugin::tick(const float n_delta_time, const UDTrackComponent *n_com
 		if (component) {
 			// now handle the different tracking types by calling the component
 			
+			UE_LOG(LogTemp, Display, TEXT("start handling of %s"), *component->GetName());
 			handle_bodies(component);
 			handle_flysticks(component);
 			handle_hands(component);
@@ -158,6 +167,7 @@ void FDTrackPlugin::tick(const float n_delta_time, const UDTrackComponent *n_com
 /* Injection routines                                                   */
 /* Called as lambdas from polling thread, executed in game thread       */
 /************************************************************************/
+
 void FDTrackPlugin::inject_body_data(const int n_body_id, const FVector &n_translation, const FRotator &n_rotation) {
 
 	check(m_injected);
@@ -256,6 +266,12 @@ void FDTrackPlugin::extrapolate(FVector &y, const FVector &y1, const FVector &y2
 
 	// f(x) = y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
 	//              ^-----factor--------^
+	if ((m_current_injection_time - m_last_injection_time) == 0) {
+		UE_LOG(LogTemp, Display, TEXT("DIVISION BY ZERO"));
+		UE_LOG(LogTemp, Display, TEXT("x2 : m_current_injection_time : %d"), m_current_injection_time);
+		UE_LOG(LogTemp, Display, TEXT("x1 : m_last_injection_time : %d"), m_last_injection_time);
+		UE_LOG(LogTemp, Display, TEXT("x2-x1 : Nenner des factors : %d"), (m_current_injection_time - m_last_injection_time));
+	}
 
 	float factor = ((now - m_last_injection_time) / (m_current_injection_time - m_last_injection_time));
 
@@ -294,6 +310,12 @@ void FDTrackPlugin::extrapolate(FRotator &n_y, const FRotator &n_y1, const FRota
 
 	// f(x) = y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
 	//              ^-----factor--------^
+	if ((m_current_injection_time - m_last_injection_time) == 0) {
+		UE_LOG(LogTemp, Display, TEXT("DIVISION BY ZERO"));
+		UE_LOG(LogTemp, Display, TEXT("x2 : m_current_injection_time : %d"), m_current_injection_time);
+		UE_LOG(LogTemp, Display, TEXT("x1 : m_last_injection_time : %d"), m_last_injection_time);
+		UE_LOG(LogTemp, Display, TEXT("x2-x1 : Nenner des factors : %d"), (m_current_injection_time - m_last_injection_time));
+	}
 
 	float factor = ((now - m_last_injection_time) / (m_current_injection_time - m_last_injection_time));
 	ret.W = y1.W + factor * (y2.W - y1.W);
@@ -304,11 +326,14 @@ void FDTrackPlugin::extrapolate(FRotator &n_y, const FRotator &n_y1, const FRota
 }
 
 
+
 /************************************************************************/
 /* Handler methods. Called in game thread tick                          */
 /* to relay information to components                                   */
 /************************************************************************/
+
 void FDTrackPlugin::handle_bodies(UDTrackComponent *n_component) {
+	UE_LOG(LogTemp, Display, TEXT("FDTrackPlugin::handle_bodies"));
 	
 	check(m_front);
 	check(m_back);
@@ -337,6 +362,7 @@ void FDTrackPlugin::handle_bodies(UDTrackComponent *n_component) {
 }
 
 void FDTrackPlugin::handle_flysticks(UDTrackComponent *n_component) {
+	UE_LOG(LogTemp, Display, TEXT("FDTrackPlugin::handle_flysticks"));
 
 	// treat all flysticks
 	FScopeLock lock(swapping_mutex());
@@ -380,6 +406,7 @@ void FDTrackPlugin::handle_flysticks(UDTrackComponent *n_component) {
 }
 
 void FDTrackPlugin::handle_hands(UDTrackComponent *n_component) {
+	UE_LOG(LogTemp, Display, TEXT("FDTrackPlugin::handle_hands"));
 
 	// treat all tracked hands
 	FScopeLock lock(swapping_mutex());
@@ -390,6 +417,7 @@ void FDTrackPlugin::handle_hands(UDTrackComponent *n_component) {
 }
 
 void FDTrackPlugin::handle_human_model(UDTrackComponent *n_component) {
+	UE_LOG(LogTemp, Display, TEXT("FDTrackPlugin::handle_human_model"));
 	
 	FScopeLock lock(swapping_mutex());
 	// treat all tracked hands

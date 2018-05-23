@@ -124,4 +124,7 @@ class FDTrackPollThread : public FRunnable {
 		/// transposed variant cached
 		const FMatrix  m_trafo_unreal_adapted_transposed;
 
+public:
+		/// a thread safe counter to use so unique names for the threads can be created
+		static FThreadSafeCounter WorkerCounter;
 };

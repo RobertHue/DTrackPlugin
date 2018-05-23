@@ -40,7 +40,7 @@
 
 FDTrackPollThread *FDTrackPollThread::m_runnable = nullptr;
 
-
+FThreadSafeCounter FDTrackPollThread::WorkerCounter; /// Default constructor. Initializes the counter to 0.
 
 FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin)
 		: m_plugin(n_plugin)
@@ -84,7 +84,20 @@ FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPl
 	// transposed is cached
 	const_cast<FMatrix &>(m_trafo_unreal_adapted_transposed) = trafo_unreal_adapted.GetTransposed();
 
-	m_thread = FRunnableThread::Create(this, TEXT("FDTrackPollThread"), 0, TPri_Normal);
+
+	// LogStats:Warning: MetaData mismatch.
+	// This warning occurs when you have two threads with the same name
+	// 
+	// m_thread = FRunnableThread::Create(this, TEXT("FDTrackPollThread"), 0, TPri_Normal);
+	// better solution to upper (with FThreadSafeCounter WorkerCounter):
+	//
+	// Increment the counter and create an unique name.
+	FString ThreadName(FString::Printf(TEXT("MyThreadName%i"), FDTrackPollThread::WorkerCounter.Increment()));
+
+	// Create the actual thread
+	UE_LOG(LogTemp, Warning, TEXT("Create new Thread: %s"), *ThreadName); 
+	m_thread = FRunnableThread::Create(this, *ThreadName);  
+	// only one thread is created in this class to run the worker FRunnable on; reason: @TODO
 }
 
 FDTrackPollThread::~FDTrackPollThread() {
@@ -132,20 +145,26 @@ uint32 FDTrackPollThread::Run() {
 	FPlatformProcess::Sleep(0.1);
 
 	if (m_dtrack2) {
+		UE_LOG(DTrackPluginLog, Display, TEXT("Using DTrack2 TCP Connection (server-IP: %s , client-port: %d )"), 
+			*FString(m_dtrack_server_ip.c_str()), m_dtrack_server_port);
 		m_dtrack.reset(new DTrackSDK(m_dtrack_server_ip, m_dtrack_server_port));
 	} else {
+		UE_LOG(DTrackPluginLog, Display, TEXT("Using DTrack2 UDP Connection (server-IP: %d , client-port: %d )"), 
+			*FString(m_dtrack_server_ip.c_str()), m_dtrack_server_port);
 		m_dtrack.reset(new DTrackSDK(m_dtrack_server_port));
 	}
 
-	// I don't know when this can occur but I guess it's client
+	// I don't know when this can occur but I guess it's client 
 	// port collision with fixed UDP ports
 	if (!m_dtrack->isLocalDataPortValid()) {
+		UE_LOG(DTrackPluginLog, Display, TEXT("Local Data port is not valid (port collision with fixed UDP ports)"));
 		m_dtrack.reset();
 		return 0;
 	}
 
 	// start the tracking via tcp route if applicable
 	if (m_dtrack2) {
+		UE_LOG(DTrackPluginLog, Display, TEXT("starting tcp measurement"));
 		if (!m_dtrack->startMeasurement()) {
 			if (m_dtrack->getLastServerError() == DTrackSDK::ERR_TIMEOUT) {
 				UE_LOG(DTrackPluginLog, Error, TEXT("Could not start tracking, timeout"));
@@ -162,6 +181,7 @@ uint32 FDTrackPollThread::Run() {
 	while (!m_stop_counter.GetValue()) {
 		// receive as much as we can
 		if (m_dtrack->receive()) {
+			UE_LOG(DTrackPluginLog, Display, TEXT("m_dtrack->receive()"));
 
 			m_plugin->begin_injection();
 
@@ -181,7 +201,7 @@ uint32 FDTrackPollThread::Run() {
 	}
 
 	m_dtrack.reset();
-
+	 
 	return 1;
 
 }
@@ -196,7 +216,9 @@ void FDTrackPollThread::Exit() {
 
 }
 
+
 void FDTrackPollThread::handle_bodies() {
+	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::handle_bodies()"));
 
 	const DTrack_Body_Type_d *body = nullptr;
 	for (int i = 0; i < m_dtrack->getNumBody(); i++) {  // why do we still use int for those counters?
@@ -216,6 +238,7 @@ void FDTrackPollThread::handle_bodies() {
 }
 
 void FDTrackPollThread::handle_flysticks() {
+	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::handle_flysticks()"));
 
 	const DTrack_FlyStick_Type_d *flystick = nullptr;
 	for (int i = 0; i < m_dtrack->getNumFlyStick(); i++) {
@@ -248,6 +271,7 @@ void FDTrackPollThread::handle_flysticks() {
 }
 
 void FDTrackPollThread::handle_hands() {
+	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::handle_hands()"));
 
 	const DTrack_Hand_Type_d *hand = nullptr;
 	for (int i = 0; i < m_dtrack->getNumHand(); i++) {
@@ -288,6 +312,7 @@ void FDTrackPollThread::handle_hands() {
 }
 
 void FDTrackPollThread::handle_human_model() {
+	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::handle_human_model()"));
 	
 	const DTrack_Human_Type_d *human = nullptr;
 	for (int i = 0; i < m_dtrack->getNumHuman(); i++) {
@@ -319,6 +344,7 @@ void FDTrackPollThread::handle_human_model() {
 
 // translate a DTrack body location (translation in mm) into Unreal Location (in cm)
 FVector FDTrackPollThread::from_dtrack_location(const double(&n_translation)[3]) {
+	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::from_dtrack_location()"));
 
 	FVector ret;
 
@@ -348,6 +374,7 @@ FVector FDTrackPollThread::from_dtrack_location(const double(&n_translation)[3])
 
 // translate a DTrack 3x3 rotation matrix (translation in mm) into Unreal Location (in cm)
 FRotator FDTrackPollThread::from_dtrack_rotation(const double(&n_matrix)[9]) {
+	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::from_dtrack_rotation()"));
 
 	// take DTrack matrix and put the values into FMatrix 
 	// ( M[RowIndex][ColumnIndex], DTrack matrix comes column-wise )

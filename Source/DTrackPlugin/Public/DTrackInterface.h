@@ -38,7 +38,8 @@
  * system
  */
 UENUM(BlueprintType, Category=DTrack)
-enum class EDTrackCoordinateSystemType : uint8 {
+enum class EDTrackCoordinateSystemType : uint8 
+{
 
 	/// The normal setting. Right handed, Z is up and Y is front 
 	CST_Normal     UMETA(DisplayName = "DTrack Normal"),
@@ -51,7 +52,8 @@ enum class EDTrackCoordinateSystemType : uint8 {
 };
 
 UENUM(BlueprintType)
-enum class EDTrackFingerType : uint8 {
+enum class EDTrackFingerType : uint8 
+{
 	FT_Thumb    UMETA(DisplayName = "Thumb"),
 	FT_Index    UMETA(DisplayName = "Index"),
 	FT_Middle   UMETA(DisplayName = "Middle"),
@@ -60,10 +62,27 @@ enum class EDTrackFingerType : uint8 {
 };
 
 /**
+* This represents information about one tracked body
+*/
+USTRUCT(BlueprintType)
+struct FDTrackMarker 
+{
+
+	GENERATED_BODY()
+
+		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
+		FVector  m_location;
+
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
+		FRotator m_rotation;
+};
+
+/**
  * This represents information about one tracked body
  */
 USTRUCT(BlueprintType)
-struct FDTrackBody {
+struct FDTrackBody 
+{
 
 	GENERATED_BODY()
 
@@ -78,7 +97,8 @@ struct FDTrackBody {
  * This represents information about one tracked flystick
  */
 USTRUCT(BlueprintType)
-struct FDTrackFlystick {
+struct FDTrackFlystick 
+{
 
 	GENERATED_BODY()
 
@@ -99,7 +119,8 @@ struct FDTrackFlystick {
  * This represents one finger (guess which one) as tracked info come in
  */
 USTRUCT(BlueprintType)
-struct FDTrackFinger {
+struct FDTrackFinger 
+{
 
 	GENERATED_BODY()
 
@@ -139,7 +160,8 @@ struct FDTrackFinger {
 * This represents one finger (guess which one) as tracked info come in
 */
 USTRUCT(BlueprintType, Category=DTrack)
-struct FDTrackHand {
+struct FDTrackHand 
+{
 
 	GENERATED_BODY()
 
@@ -161,7 +183,8 @@ struct FDTrackHand {
  * This represents one joint of human model tracking.
  */
 USTRUCT(BlueprintType)
-struct FDTrackJoint {
+struct FDTrackJoint 
+{
 
 	GENERATED_BODY()
 
@@ -188,19 +211,21 @@ struct FDTrackJoint {
  * This represents one human model.
  */
 USTRUCT(BlueprintType)
-struct FDTrackHuman {
+struct FDTrackHuman 
+{
 
 	GENERATED_BODY()
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Joints"))
-		TArray<FDTrackJoint> m_joints;
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Joints"))
+	TArray<FDTrackJoint> m_joints;
 };
 
 
-
-UINTERFACE(Blueprintable)
-class UDTrackInterface : public UInterface {
-
+/* must have BlueprintType as a specifier to have this interface exposed to blueprints
+with this line you can easily add this interface to any blueprint class */
+UINTERFACE(BlueprintType)
+class UDTrackInterface : public UInterface 
+{
 	GENERATED_UINTERFACE_BODY()
 };
 
@@ -212,34 +237,41 @@ class UDTrackInterface : public UInterface {
 	@todo: Document me properly
 
  */
-class DTRACKPLUGIN_API IDTrackInterface {
+class DTRACKPLUGIN_API IDTrackInterface 
+{
 
 	GENERATED_IINTERFACE_BODY()
 
+
 	public:
 		/// never called yet
-		UFUNCTION(BlueprintImplementableEvent, Category = DTrackEvents)
+		/* @TODO wenn es nicht verwendet wird,,, warum ist es dann drinnen?
+		UFUNCTION(
+			BlueprintImplementableEvent, // can be implemented but does not have to be, whereas native has to be implemented
+			BlueprintCallable, 
+			Category = DTrackEvents)
 		void DeviceDisabled();
+		*/
 
 		/**
 		 * This is called for each new set of body tracking data received unless 
 		 * frame rate is lower than tracking data frequency.
 		 */
-		UFUNCTION(BlueprintNativeEvent, Category = DTrackEvents)
+		UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = DTrackEvents)
 		void OnBodyData(const int32 BodyID, const FVector &Position, const FRotator &Rotation);
 
 		/**
 		 * This is called for each new set of flystick tracking data.
 		 * It is only called for flystick location and rotation. Buttons come separately.
 		 */
-		UFUNCTION(BlueprintNativeEvent, Category = DTrackEvents)
+		UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = DTrackEvents)
 		void OnFlystickData(const int32 FlystickID, const FVector &Position, const FRotator &Rotation);
 
 		/**
 		 * This is called when the user presses buttons on flysticks.
 		 * It is only called when a button changes state to either Pressed or not Pressed
 		 */
-		UFUNCTION(BlueprintNativeEvent, Category = DTrackEvents)
+		UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = DTrackEvents)
 		void OnFlystickButton(const int32 FlystickID, const int32 &ButtonIndex, const bool Pressed);
 
 		/**
@@ -249,19 +281,19 @@ class DTRACKPLUGIN_API IDTrackInterface {
 		 * I suppose a second dimension will manifest as a second stick, which is why I treat them all
 		 * in one call rather than separate calls per joystick.
 		 */
-		UFUNCTION(BlueprintNativeEvent, Category = DTrackEvents)
+		UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = DTrackEvents)
 		void OnFlystickJoystick(const int32 FlystickID, const TArray<float> &JoystickValues);
 		
 		/**
 		 * Hand and finger tracking data comes in. They are collected in one call assuming they be treated at once.
 		 */
-		UFUNCTION(BlueprintNativeEvent, Category = DTrackEvents)
+		UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = DTrackEvents)
 		void OnHandTracking(const int32 HandID, const bool Right, const FVector &Translation, const FRotator &Rotation, const TArray<FDTrackFinger> &Fingers);
 
 		/**
 		 * Human model tracking data comes in. All joints are assembled in this one call
 		 */
-		UFUNCTION(BlueprintNativeEvent, Category = DTrackEvents)
+		UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = DTrackEvents)
 		void OnHumanModel(const int32 ModelID, const TArray<FDTrackJoint> &Joints);
 
 		/// needed by the engine for raw output

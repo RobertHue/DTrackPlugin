@@ -57,6 +57,10 @@ class FDTrackPlugin : public IDTrackPlugin {
 
 		/// polling thread injects body tracking data for later retrieval
 		/// call in game thread, not mutexed!
+		void inject_marker_data(const int n_marker_id, const FVector &n_translation, const FRotator &n_rotation);
+
+		/// polling thread injects body tracking data for later retrieval
+		/// call in game thread, not mutexed!
 		void inject_body_data(const int n_body_id, const FVector &n_translation, const FRotator &n_rotation);
 
 		/// polling thread injects flystick data for later retrieval
@@ -79,10 +83,10 @@ class FDTrackPlugin : public IDTrackPlugin {
 
 		/// For front and back buffer of data sent by polling thread
 		struct DataBuffer {
-			TArray<FDTrackBody>        m_body_data;          //!< cached body data being injected by thread
-			TArray<FDTrackFlystick>    m_flystick_data;      //!< cached flystick tracking info
-			TArray<FDTrackHand>  m_hand_data;          //!< cached hand tracking info
-			TArray<FDTrackHuman>       m_human_model_data;   //!< cached human model info
+			TArray<FDTrackBody>			m_body_data;          //!< cached body data being injected by thread
+			TArray<FDTrackFlystick>		m_flystick_data;      //!< cached flystick tracking info
+			TArray<FDTrackHand>			m_hand_data;          //!< cached hand tracking info
+			TArray<FDTrackHuman>		m_human_model_data;   //!< cached human model info
 		};
 
 		/// unreal doesn't seem to have condition variables
@@ -98,7 +102,7 @@ class FDTrackPlugin : public IDTrackPlugin {
 		std::vector< TArray<int> > m_last_button_states;
 
 		class FDTrackPollThread *m_polling_thread = nullptr;
-			
+
 		/// consider the current frame's 6dof bodies and call the component if appropriate
 		void handle_bodies(UDTrackComponent *n_component);
 
