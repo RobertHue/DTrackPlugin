@@ -30,7 +30,7 @@ namespace UnrealBuildTool.Rules
     using System;
 
 	public class DTrackPlugin : ModuleRules
-	{   
+    {
         private string ThirdPartyPath
         {
             get { return Path.GetFullPath(Path.Combine(ModuleDirectory, "../../ThirdParty/")); }
@@ -44,6 +44,7 @@ namespace UnrealBuildTool.Rules
 			PublicIncludePaths.AddRange(
 				new string[] {
                     "DTrackPlugin/Public",
+                    "DTrackPlugin/Examples",
 					// ... add public include paths required here ...
 				}
 				);
@@ -62,6 +63,9 @@ namespace UnrealBuildTool.Rules
 					"Core",
 					"CoreUObject",
                     "Engine",
+                    "InputCore",
+                    "HeadMountedDisplay",
+                    "AnimGraphRuntime",
 					// ... add other public dependencies that you statically link with here ...
 				}
 				);
@@ -82,7 +86,7 @@ namespace UnrealBuildTool.Rules
 				);
 
             LoadDTrackLib(Target);
-		}
+		} 
 
         public bool LoadDTrackLib(ReadOnlyTargetRules Target)
         {
