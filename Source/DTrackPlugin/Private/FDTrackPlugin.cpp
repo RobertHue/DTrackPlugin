@@ -46,25 +46,6 @@ void FDTrackPlugin::StartupModule() {
 	m_front.reset(new DataBuffer);
 	m_back.reset(new DataBuffer);
 	m_injected.reset(new DataBuffer);
-
-	// quick test for extrapolation
-// 	FVector current;
-// 	FVector last;
-// 
-// 	m_last_injection_time = 1;
-// 	m_current_injection_time = 3;
-// 
-// 	current.Y = 2;
-// 	last.Y = 1;
-// 
-// 	FVector test;
-// 	extrapolate(test, last, current);
-// 
-// 	// I expect Y to be 2.5
-// 	checkf(test.Y == 2.5, TEXT("extrapolation test failed"));
-// 
-// 	m_last_injection_time = 0;
-// 	m_current_injection_time = 0;
 }
 
 void FDTrackPlugin::ShutdownModule() {
@@ -251,93 +232,6 @@ void FDTrackPlugin::end_injection() {
 	std::swap(m_front, m_injected);
 }
 
-// y = dst
-// y1 = last
-// y2 = current
-void FDTrackPlugin::extrapolate(FVector &y, const FVector &y1, const FVector &y2) const {
-
-	uint64 now = FPlatformTime::Cycles64();
-
-	// If the values we have are very recent I don't extrapolate and just return the latest
-	if (now < m_current_injection_time + 10) {
-		y = y2;
-		return;
-	}
-
-	// this should cover startup conditions
-	if (!m_current_injection_time || !m_last_injection_time) {		
-		y = y2;
-		return;
-	}
-
-	// unlikely since we use cycles but we could run twice so close together
-	if (m_current_injection_time == m_last_injection_time) {
-		y = y2;
-		return;
-	}
-
-
-	// f(x) = y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
-	//              ^-----factor--------^
-	if ((m_current_injection_time - m_last_injection_time) == 0) {
-		UE_LOG(LogTemp, Display, TEXT("DIVISION BY ZERO"));
-		UE_LOG(LogTemp, Display, TEXT("x2 : m_current_injection_time : %d"), m_current_injection_time);
-		UE_LOG(LogTemp, Display, TEXT("x1 : m_last_injection_time : %d"), m_last_injection_time);
-		UE_LOG(LogTemp, Display, TEXT("x2-x1 : Nenner des factors : %d"), (m_current_injection_time - m_last_injection_time));
-	}
-
-	float factor = ((now - m_last_injection_time) / (m_current_injection_time - m_last_injection_time));
-
-	y.X = y1.X + factor * (y2.X - y1.X);
-	y.Y = y1.Y + factor * (y2.Y - y1.Y);
-	y.Z = y1.Z + factor * (y2.Z - y1.Z);
-}
-
-void FDTrackPlugin::extrapolate(FRotator &n_y, const FRotator &n_y1, const FRotator &n_y2) const {
-
-	uint64 now = FPlatformTime::Cycles64();
-
-	// If the values we have are very recent I don't extrapolate and just return the latest
-	if (now < m_current_injection_time + 10) {
-		n_y = n_y2;
-		return;
-	}
-
-	// this should cover startup conditions
-	if (!m_current_injection_time || !m_last_injection_time) {
-		n_y = n_y2;
-		return;
-	}
-
-	// unlikely since we use cycles but we could run twice so close together
-	if (m_current_injection_time == m_last_injection_time) {
-		n_y = n_y2;
-		return;
-	}
-
-	// I will use quaternions of those because I have no idea what happens when 
-	// I extrapolate those Eulers
-	FQuat y1 = n_y1.Quaternion();
-	FQuat y2 = n_y2.Quaternion();
-	FQuat ret;
-
-	// f(x) = y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
-	//              ^-----factor--------^
-	if ((m_current_injection_time - m_last_injection_time) == 0) {
-		UE_LOG(LogTemp, Display, TEXT("DIVISION BY ZERO"));
-		UE_LOG(LogTemp, Display, TEXT("x2 : m_current_injection_time : %d"), m_current_injection_time);
-		UE_LOG(LogTemp, Display, TEXT("x1 : m_last_injection_time : %d"), m_last_injection_time);
-		UE_LOG(LogTemp, Display, TEXT("x2-x1 : Nenner des factors : %d"), (m_current_injection_time - m_last_injection_time));
-	}
-
-	float factor = ((now - m_last_injection_time) / (m_current_injection_time - m_last_injection_time));
-	ret.W = y1.W + factor * (y2.W - y1.W);
-	ret.X = y1.X + factor * (y2.X - y1.X);
-	ret.Y = y1.Y + factor * (y2.Y - y1.Y);
-	ret.Z = y1.Z + factor * (y2.Z - y1.Z);
-	n_y = ret.Rotator();
-}
-
 
 
 /************************************************************************/
@@ -356,11 +250,14 @@ void FDTrackPlugin::handle_bodies(UDTrackComponent *n_component) {
 
 		const FDTrackBody &current_body = m_front->m_body_data[i];
 
+		
+		n_component->body_tracking(i, current_body.m_location, current_body.m_rotation);
+		/*
 		// This should occur only once while starting up
 		// No extrapolation with one data set
-		if (m_back->m_body_data.Num() != m_front->m_body_data.Num()) {
+		if (m_back->m_body_data.Num() != m_front->m_body_data.Num()) {	// in case of one data set:
 			n_component->body_tracking(i, current_body.m_location, current_body.m_rotation);
-		} else {
+		} else {	// in case of two data sets => extrapolate 
 			const FDTrackBody &last_body = m_back->m_body_data[i];
 
 			FVector extrapolated_location;
@@ -371,6 +268,7 @@ void FDTrackPlugin::handle_bodies(UDTrackComponent *n_component) {
 
 			n_component->body_tracking(i, extrapolated_location, extrapolated_rotation);
 		}
+		*/
 	}
 }
 

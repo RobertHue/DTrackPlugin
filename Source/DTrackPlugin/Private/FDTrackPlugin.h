@@ -78,9 +78,6 @@ class FDTrackPlugin : public IDTrackPlugin {
 		void begin_injection();
 		void end_injection();
 
-		void extrapolate(FVector &y, const FVector &y1, const FVector &y2) const;
-		void extrapolate(FRotator &n_y, const FRotator &n_y1, const FRotator &n_y2) const;
-
 		/// For front and back buffer of data sent by polling thread
 		struct DataBuffer {
 			TArray<FDTrackBody>			m_body_data;          //!< cached body data being injected by thread
