@@ -32,6 +32,7 @@
 IMPLEMENT_MODULE(FDTrackPlugin, DTrackPlugin)
 
 DEFINE_LOG_CATEGORY(DTrackPluginLog);
+DEFINE_LOG_CATEGORY(DTrackPollThreadLog);
 
 #define LOCTEXT_NAMESPACE "DTrackPlugin"
 
@@ -67,6 +68,7 @@ void FDTrackPlugin::StartupModule() {
 }
 
 void FDTrackPlugin::ShutdownModule() {
+	UE_LOG(LogTemp, Warning, TEXT("start ShutdownModule"));
 
 	// Another wait for potential asyncs. 
 	// Should be able to catch them but don't know how
@@ -74,8 +76,11 @@ void FDTrackPlugin::ShutdownModule() {
 
 	// we should have been stopped but what can you do?
 	if (m_polling_thread) {
+		UE_LOG(LogTemp, Warning, TEXT("polling thread interrupt"));
 		m_polling_thread->interrupt();
+		UE_LOG(LogTemp, Warning, TEXT("polling thread join"));
 		m_polling_thread->join();
+		UE_LOG(LogTemp, Warning, TEXT("cleanup pointers and containers"));
 		delete m_polling_thread;
 		m_polling_thread = nullptr;
 	}
@@ -83,6 +88,7 @@ void FDTrackPlugin::ShutdownModule() {
 	m_front.reset();
 	m_back.reset();
 	m_injected.reset();
+	UE_LOG(LogTemp, Warning, TEXT("finished ShutdownModule"));
 }
 
 void FDTrackPlugin::start_up(UDTrackComponent *n_client) {
@@ -104,18 +110,25 @@ void FDTrackPlugin::start_up(UDTrackComponent *n_client) {
 }
 
 void FDTrackPlugin::remove(class UDTrackComponent *n_client) {
+	UE_LOG(LogTemp, Warning, TEXT("start FDTrackPlugin::remove"));
 
+	UE_LOG(LogTemp, Warning, TEXT("remove all all added clients (aka the UDTrackComponents)"));
 	m_clients.RemoveAll([&](const TWeakObjectPtr<UDTrackComponent> p) {
 		return p.Get() == n_client;
 	});
 
 	// we have no reason to run anymore
-	if (m_polling_thread && (m_clients.Num() == 0)) {	
+	if (m_polling_thread && (m_clients.Num() == 0)) {
+		UE_LOG(LogTemp, Warning, TEXT("polling thread interrupt"));
 		m_polling_thread->interrupt();
+		UE_LOG(LogTemp, Warning, TEXT("polling thread join"));
 		m_polling_thread->join();
+		UE_LOG(LogTemp, Warning, TEXT("cleanup pointers and containers"));
 		delete m_polling_thread;
 		m_polling_thread = nullptr;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("end FDTrackPlugin::remove"));
 }
 
 FCriticalSection *FDTrackPlugin::swapping_mutex() {

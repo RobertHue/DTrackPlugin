@@ -34,7 +34,7 @@ UMyPoseableMeshComponent::UMyPoseableMeshComponent()
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("DTrack Component could be created :D"));  // This shouldn't happen but you may treat it.
-		// m_dtrack_component->SetupAttachment(this);
+		m_dtrack_component->SetupAttachment(this);
 	}
 	 
 	// this->SetupAttachment(this);  

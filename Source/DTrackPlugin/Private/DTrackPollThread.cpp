@@ -31,10 +31,11 @@
 #include "AllowWindowsPlatformTypes.h" 
 
 #include "DTrackSDK.hpp"
+#include "Engine/Engine.h"  // for GEngine->AddOnScreenDebugMessage
 
 // revert above allowed types to UBT default
 #include "HideWindowsPlatformTypes.h"
-#include "Async.h"
+#include "Async.h" 
 
 #define LOCTEXT_NAMESPACE "DTrackPlugin"
 
@@ -49,6 +50,7 @@ FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPl
 		, m_dtrack_server_port(n_client->m_dtrack_server_port)
 		, m_coordinate_system(n_client->m_coordinate_system)
 		, m_stop_counter(0) {
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("Constructor of TDTrackPollThread (the factory class for DTrack threads)"));
 
 	// well, let's just say I don't know how to use the initializer list on them
 	FMatrix &trafo_normal = const_cast<FMatrix &>(m_trafo_normal);
@@ -95,8 +97,11 @@ FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPl
 	FString ThreadName(FString::Printf(TEXT("MyThreadName%i"), FDTrackPollThread::WorkerCounter.Increment()));
 
 	// Create the actual thread
-	UE_LOG(LogTemp, Warning, TEXT("Create new Thread: %s"), *ThreadName); 
-	m_thread = FRunnableThread::Create(this, *ThreadName);  
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("Create new Thread: %s"), *ThreadName);
+	m_thread = FRunnableThread::Create(this, *ThreadName);
+
+
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("Created: %s (%d)"), *m_thread->GetThreadName(), m_thread->GetThreadID());
 	// only one thread is created in this class to run the worker FRunnable on; reason: @TODO
 }
 
@@ -108,6 +113,7 @@ FDTrackPollThread::~FDTrackPollThread() {
 	}
 
 	m_runnable = nullptr;
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("Destruct of TDTrackPollThread (the factory class for DTrack threads)"));
 }
 
 FDTrackPollThread *FDTrackPollThread::start(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin) {
@@ -120,14 +126,15 @@ FDTrackPollThread *FDTrackPollThread::start(const UDTrackComponent *n_client, FD
 }
 
 void FDTrackPollThread::interrupt() {
-
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("Stop: %s (%d)"), *m_thread->GetThreadName(), m_thread->GetThreadID());
 	Stop();
 }
 
 void FDTrackPollThread::join() {
 
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("WaitForCompletion: %s (%d)"), *m_thread->GetThreadName(), m_thread->GetThreadID());
 	m_thread->WaitForCompletion();
-}
+} 
 
 bool FDTrackPollThread::Init() {
 
@@ -137,6 +144,7 @@ bool FDTrackPollThread::Init() {
 	return true;
 }
 
+// Run only gets processed once
 // 1 is success
 // 0 is failure
 uint32 FDTrackPollThread::Run() {
@@ -145,11 +153,11 @@ uint32 FDTrackPollThread::Run() {
 	FPlatformProcess::Sleep(0.1);
 
 	if (m_dtrack2) {
-		UE_LOG(DTrackPluginLog, Display, TEXT("Using DTrack2 TCP Connection (server-IP: %s , client-port: %d )"), 
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("Using DTrack2 TCP Connection (server-IP: %s , client-port: %d )"),
 			*FString(m_dtrack_server_ip.c_str()), m_dtrack_server_port);
 		m_dtrack.reset(new DTrackSDK(m_dtrack_server_ip, m_dtrack_server_port));
 	} else {
-		UE_LOG(DTrackPluginLog, Display, TEXT("Using DTrack2 UDP Connection (server-IP: %d , client-port: %d )"), 
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("Using DTrack2 UDP Connection (server-IP: %d , client-port: %d )"),
 			*FString(m_dtrack_server_ip.c_str()), m_dtrack_server_port);
 		m_dtrack.reset(new DTrackSDK(m_dtrack_server_port));
 	}
@@ -157,21 +165,21 @@ uint32 FDTrackPollThread::Run() {
 	// I don't know when this can occur but I guess it's client 
 	// port collision with fixed UDP ports
 	if (!m_dtrack->isLocalDataPortValid()) {
-		UE_LOG(DTrackPluginLog, Display, TEXT("Local Data port is not valid (port collision with fixed UDP ports)"));
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("Local Data port is not valid (port collision with fixed UDP ports)"));
 		m_dtrack.reset();
 		return 0;
 	}
 
 	// start the tracking via tcp route if applicable
 	if (m_dtrack2) {
-		UE_LOG(DTrackPluginLog, Display, TEXT("starting tcp measurement"));
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("starting tcp measurement"));
 		if (!m_dtrack->startMeasurement()) {
 			if (m_dtrack->getLastServerError() == DTrackSDK::ERR_TIMEOUT) {
-				UE_LOG(DTrackPluginLog, Error, TEXT("Could not start tracking, timeout"));
+				UE_LOG(DTrackPollThreadLog, Error, TEXT("Could not start tracking, timeout"));
 			} else if (m_dtrack->getLastServerError() == DTrackSDK::ERR_NET) {
-				UE_LOG(DTrackPluginLog, Error, TEXT("Could not start tracking, network error"));
+				UE_LOG(DTrackPollThreadLog, Error, TEXT("Could not start tracking, network error"));
 			} else {
-				UE_LOG(DTrackPluginLog, Error, TEXT("Could not start tracking"));
+				UE_LOG(DTrackPollThreadLog, Error, TEXT("Could not start tracking"));
 			}
 			return 0;
 		} 
@@ -181,7 +189,7 @@ uint32 FDTrackPollThread::Run() {
 	while (!m_stop_counter.GetValue()) {
 		// receive as much as we can
 		if (m_dtrack->receive()) {
-			UE_LOG(DTrackPluginLog, Display, TEXT("m_dtrack->receive()"));
+			UE_LOG(DTrackPollThreadLog, Display, TEXT("m_dtrack->receive()"));
 
 			m_plugin->begin_injection();
 
@@ -193,18 +201,39 @@ uint32 FDTrackPollThread::Run() {
 		
 			m_plugin->end_injection();
 		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "no DTRACK data received!!!!");
+		}
 	}
 
 	if (m_dtrack2) {
-		UE_LOG(DTrackPluginLog, Display, TEXT("Stopping DTrack2 measurement."));
-		m_dtrack->stopMeasurement();
+		if (m_dtrack->isCommandInterfaceValid()) {
+			UE_LOG(DTrackPollThreadLog, Display, TEXT("TCP connection for DTrack2 commands is active."));
+		} else {
+			UE_LOG(DTrackPollThreadLog, Display, TEXT("TCP connection for DTrack2 commands is inactive."));
+		} 
+
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("Stopping DTrack2 measurement."));
+		bool wasStopCommandSuccessful = m_dtrack->stopMeasurement();
+		if (wasStopCommandSuccessful) {// Is command successful ? If measurement is not running return value is true.
+			UE_LOG(DTrackPollThreadLog, Display, TEXT("Stop command was successful! :D"));
+		}
+		else {
+			UE_LOG(DTrackPollThreadLog, Display, TEXT("Stop command was unsuccessful"));
+		}
+
+		if (m_dtrack->isCommandInterfaceValid()) {
+			UE_LOG(DTrackPollThreadLog, Display, TEXT("TCP connection for DTrack2 commands is active."));
+		} else {
+			UE_LOG(DTrackPollThreadLog, Display, TEXT("TCP connection for DTrack2 commands is inactive."));
+		}
+
 	}
-
 	m_dtrack.reset();
-	 
-	return 1;
 
-}
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("Successful finish of: %s (%d)"), *m_thread->GetThreadName(), m_thread->GetThreadID());
+	return 1;
+} 
 
 void FDTrackPollThread::Stop() {
 
@@ -218,7 +247,7 @@ void FDTrackPollThread::Exit() {
 
 
 void FDTrackPollThread::handle_bodies() {
-	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::handle_bodies()"));
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::handle_bodies()"));
 
 	const DTrack_Body_Type_d *body = nullptr;
 	for (int i = 0; i < m_dtrack->getNumBody(); i++) {  // why do we still use int for those counters?
@@ -238,7 +267,7 @@ void FDTrackPollThread::handle_bodies() {
 }
 
 void FDTrackPollThread::handle_flysticks() {
-	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::handle_flysticks()"));
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::handle_flysticks()"));
 
 	const DTrack_FlyStick_Type_d *flystick = nullptr;
 	for (int i = 0; i < m_dtrack->getNumFlyStick(); i++) {
@@ -271,7 +300,7 @@ void FDTrackPollThread::handle_flysticks() {
 }
 
 void FDTrackPollThread::handle_hands() {
-	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::handle_hands()"));
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::handle_hands()"));
 
 	const DTrack_Hand_Type_d *hand = nullptr;
 	for (int i = 0; i < m_dtrack->getNumHand(); i++) {
@@ -312,7 +341,7 @@ void FDTrackPollThread::handle_hands() {
 }
 
 void FDTrackPollThread::handle_human_model() {
-	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::handle_human_model()"));
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::handle_human_model()"));
 	
 	const DTrack_Human_Type_d *human = nullptr;
 	for (int i = 0; i < m_dtrack->getNumHuman(); i++) {
@@ -344,7 +373,7 @@ void FDTrackPollThread::handle_human_model() {
 
 // translate a DTrack body location (translation in mm) into Unreal Location (in cm)
 FVector FDTrackPollThread::from_dtrack_location(const double(&n_translation)[3]) {
-	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::from_dtrack_location()"));
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::from_dtrack_location()"));
 
 	FVector ret;
 
@@ -374,7 +403,7 @@ FVector FDTrackPollThread::from_dtrack_location(const double(&n_translation)[3])
 
 // translate a DTrack 3x3 rotation matrix (translation in mm) into Unreal Location (in cm)
 FRotator FDTrackPollThread::from_dtrack_rotation(const double(&n_matrix)[9]) {
-	UE_LOG(DTrackPluginLog, Display, TEXT("FDTrackPollThread::from_dtrack_rotation()"));
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::from_dtrack_rotation()"));
 
 	// take DTrack matrix and put the values into FMatrix 
 	// ( M[RowIndex][ColumnIndex], DTrack matrix comes column-wise )

@@ -100,7 +100,7 @@ class FDTrackPollThread : public FRunnable {
 		/// this is the DTrack SDK main object. I'll have one one owned here as I do not know if they can coexist
 		std::unique_ptr< DTrackSDK > m_dtrack;
 
-		/// parameters
+		/// parameters 
 		const bool                   m_dtrack2;
 		const std::string            m_dtrack_server_ip;
 		const uint32                 m_dtrack_server_port;
