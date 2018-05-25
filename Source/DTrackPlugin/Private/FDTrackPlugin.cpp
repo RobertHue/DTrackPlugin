@@ -167,7 +167,8 @@ void FDTrackPlugin::inject_body_data(const int n_body_id, const FVector &n_trans
 	check(m_injected);
 	TArray<FDTrackBody> &body_inject = m_injected->m_body_data;
 
-	if (body_inject.Num() < (n_body_id + 1)) {
+	// resize the TArrray if its currentSize is smalle than the received (ID+1)
+	if (body_inject.Num() < (n_body_id + 1)) {	
 		body_inject.SetNumZeroed(n_body_id + 1, false);
 	}
 
@@ -225,13 +226,25 @@ void FDTrackPlugin::begin_injection() {
 
 void FDTrackPlugin::end_injection() {
 
+	// so this thread cannot be accessed by another one at the same time (called by Polling Thread)
+	FScopeLock lock(swapping_mutex()); 
+
+
 	// injection vector becomes front now, front becomes back and back becomes 
-	// the new injection data storage
-	FScopeLock lock(swapping_mutex());
+	// the new injection data storage... (its actually a ring buffer with 3 slots here)
+	// here lies the error:
+	// std::swap(m_front, m_back);
+	// std::swap(m_front, m_injected);
+	// the old data (back) becomes the injected data... but when the old data is not overwritten
+	// which is the case when body->quality==0 then the old data inside m_injected gets transfered over to m_front anyways
+	// solution: 
+	// 1) either just swap when there is really new data from the producer thread (polling thread)
+	// 2) or make the ringbuffer into a queue
+
 	std::swap(m_front, m_back);
 	std::swap(m_front, m_injected);
 }
-
+ 
 
 
 /************************************************************************/
@@ -250,6 +263,10 @@ void FDTrackPlugin::handle_bodies(UDTrackComponent *n_component) {
 
 		const FDTrackBody &current_body = m_front->m_body_data[i];
 
+		UE_LOG(LogTemp, Error, TEXT("current_body loc : %s rot : %s"), 
+			*(current_body.m_location.ToString()), 
+			*(current_body.m_rotation.ToString())
+		);
 		
 		n_component->body_tracking(i, current_body.m_location, current_body.m_rotation);
 		/*

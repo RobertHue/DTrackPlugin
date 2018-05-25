@@ -49,7 +49,7 @@ class DTRACKPLUGIN_API UDTrackComponent
 		FString m_dtrack_server_ip = "10.10.8.75";
 
 		UPROPERTY(EditAnywhere, meta = (DisplayName = "DTrack Server Port", ToolTip = "Enter the port your server uses"))
-		uint32  m_dtrack_server_port = 5000;	// this is actually not the server port (its the client port on windows), whereas the SDK has the server port hardwired into its code...; so @TODO needs to be refactored (name change or something different...)
+		uint32  m_dtrack_client_port = 5000;	// this is actually not the server port (its the client port on windows), whereas the SDK has the server port hardwired into its code...; so @TODO needs to be refactored (name change or something different...)
 
 		UPROPERTY(EditAnywhere, meta = (DisplayName = "DTrack2 Protocol", ToolTip = "Use the TCP command channel based DTrack2 protocol; otherwhise use UDP"))
 		bool    m_dtrack_2 = true;

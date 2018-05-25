@@ -41,13 +41,18 @@
 
 FDTrackPollThread *FDTrackPollThread::m_runnable = nullptr;
 
-FThreadSafeCounter FDTrackPollThread::WorkerCounter; /// Default constructor. Initializes the counter to 0.
+FThreadSafeCounter FDTrackPollThread::m_UniqueNameCounter; /// Default constructor. Initializes the counter to 0.
+
+// for returns
+// enum class Return { error=0, success=1 };
+#define RETURN_SUCCESS 1
+#define RETURN_ERROR   0
 
 FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin)
 		: m_plugin(n_plugin)
 		, m_dtrack2(n_client->m_dtrack_2)
 		, m_dtrack_server_ip(TCHAR_TO_UTF8(*n_client->m_dtrack_server_ip))
-		, m_dtrack_server_port(n_client->m_dtrack_server_port)
+		, m_dtrack_client_port(n_client->m_dtrack_client_port)
 		, m_coordinate_system(n_client->m_coordinate_system)
 		, m_stop_counter(0) {
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Constructor of TDTrackPollThread (the factory class for DTrack threads)"));
@@ -94,18 +99,20 @@ FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPl
 	// better solution to upper (with FThreadSafeCounter WorkerCounter):
 	//
 	// Increment the counter and create an unique name.
-	FString ThreadName(FString::Printf(TEXT("MyThreadName%i"), FDTrackPollThread::WorkerCounter.Increment()));
+	FString ThreadName(FString::Printf(TEXT("MyThreadName%i"), FDTrackPollThread::m_UniqueNameCounter.Increment()));
 
 	// Create the actual thread
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Create new Thread: %s"), *ThreadName);
-	m_thread = FRunnableThread::Create(this, *ThreadName);
+	m_thread = FRunnableThread::Create(this, *ThreadName); 
 
 
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Created: %s (%d)"), *m_thread->GetThreadName(), m_thread->GetThreadID());
-	// only one thread is created in this class to run the worker FRunnable on; reason: @TODO
+	// only one thread is created in this class to run the worker FRunnable on; 
+	// due to the class design it's not possible that more than one thread is created
 }
 
 FDTrackPollThread::~FDTrackPollThread() {
+	m_dtrack.reset(nullptr);	// release and delete the DTrackSDK-object, since this uptr is scoped its not really needed
 
 	if (m_thread) {
 		delete m_thread;
@@ -149,17 +156,27 @@ bool FDTrackPollThread::Init() {
 // 0 is failure
 uint32 FDTrackPollThread::Run() {
 
-	// Initial wait before starting
+	// Initial wait before starting (in case not everything in Unreal is setup yet)
 	FPlatformProcess::Sleep(0.1);
 
 	if (m_dtrack2) {
-		UE_LOG(DTrackPollThreadLog, Display, TEXT("Using DTrack2 TCP Connection (server-IP: %s , client-port: %d )"),
-			*FString(m_dtrack_server_ip.c_str()), m_dtrack_server_port);
-		m_dtrack.reset(new DTrackSDK(m_dtrack_server_ip, m_dtrack_server_port));
+		UE_LOG(DTrackPollThreadLog, Display, 
+			TEXT("Using DTrack2 TCP Connection (server-IP: %s , client-port: %d )"),
+			*FString(m_dtrack_server_ip.c_str()), m_dtrack_client_port
+		);
+
+		m_dtrack.reset(new DTrackSDK(
+			m_dtrack_server_ip,		// server_host (server_port is always 50105)
+			m_dtrack_client_port	// data_port
+		));
 	} else {
-		UE_LOG(DTrackPollThreadLog, Display, TEXT("Using DTrack2 UDP Connection (server-IP: %d , client-port: %d )"),
-			*FString(m_dtrack_server_ip.c_str()), m_dtrack_server_port);
-		m_dtrack.reset(new DTrackSDK(m_dtrack_server_port));
+		UE_LOG(DTrackPollThreadLog, Display, 
+			TEXT("Using DTrack2 UDP Connection (server-IP: %d , client-port: %d )"),
+			*FString(m_dtrack_server_ip.c_str()), m_dtrack_client_port
+		);
+		m_dtrack.reset(new DTrackSDK(
+			m_dtrack_client_port	// data_port
+		));
 	}
 
 	// I don't know when this can occur but I guess it's client 
@@ -167,7 +184,7 @@ uint32 FDTrackPollThread::Run() {
 	if (!m_dtrack->isLocalDataPortValid()) {
 		UE_LOG(DTrackPollThreadLog, Display, TEXT("Local Data port is not valid (port collision with fixed UDP ports)"));
 		m_dtrack.reset();
-		return 0;
+		return RETURN_ERROR;
 	}
 
 	// start the tracking via tcp route if applicable
@@ -181,24 +198,28 @@ uint32 FDTrackPollThread::Run() {
 			} else {
 				UE_LOG(DTrackPollThreadLog, Error, TEXT("Could not start tracking"));
 			}
-			return 0;
+			return RETURN_ERROR;
 		} 
 	} 
 
 	// now go looping until Stop() increases the stop condition
 	while (!m_stop_counter.GetValue()) {
 		// receive as much as we can
-		if (m_dtrack->receive()) {
+		if (m_dtrack->receive()) {		// busy waiting
 			UE_LOG(DTrackPollThreadLog, Display, TEXT("m_dtrack->receive()"));
 
-			m_plugin->begin_injection();
+			m_plugin->begin_injection();	// set some timestamp of this measurement
 
 			// treat body info and cache results into plug-in
-			handle_bodies();
-			handle_flysticks();
-			handle_hands();
-			handle_human_model();
+			handle_bodies();	
+
+			// TODO some tests:
+			// handle_flysticks();
+			// handle_hands();
+			// handle_human_model();
 		
+			// collect data here in this reactive system and forward them with end_injection()
+			// TODO Nice to have:    Forward nothing if there is no new data! (quality==0)
 			m_plugin->end_injection();
 		}
 		else {
@@ -214,8 +235,7 @@ uint32 FDTrackPollThread::Run() {
 		} 
 
 		UE_LOG(DTrackPollThreadLog, Display, TEXT("Stopping DTrack2 measurement."));
-		bool wasStopCommandSuccessful = m_dtrack->stopMeasurement();
-		if (wasStopCommandSuccessful) {// Is command successful ? If measurement is not running return value is true.
+		if (m_dtrack->stopMeasurement()) {// Is command successful ? If measurement is not running return value is true.
 			UE_LOG(DTrackPollThreadLog, Display, TEXT("Stop command was successful! :D"));
 		}
 		else {
@@ -229,10 +249,9 @@ uint32 FDTrackPollThread::Run() {
 		}
 
 	}
-	m_dtrack.reset();
 
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Successful finish of: %s (%d)"), *m_thread->GetThreadName(), m_thread->GetThreadID());
-	return 1;
+	return RETURN_SUCCESS;
 } 
 
 void FDTrackPollThread::Stop() {
@@ -254,7 +273,7 @@ void FDTrackPollThread::handle_bodies() {
 		body = m_dtrack->getBody(i);
 		checkf(body, TEXT("DTrack API error, body address null"));
 
-		if (body->quality > 0) {
+		if (body->quality > 0) {	// with quality you can check whether the registered target is being tracked!
 			// Quality below zero means the body is not visible to the system right now. I won't call the interface
 
 			FVector translation = from_dtrack_location(body->loc);
@@ -263,6 +282,8 @@ void FDTrackPollThread::handle_bodies() {
 	//		FScopeLock lock(m_plugin->bodies_mutex());
 			m_plugin->inject_body_data(body->id, translation, rotation);
 		}
+		//return false;	// nothing new; registered body is not visible to the system...
+	
 	}
 }
 

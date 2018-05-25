@@ -92,9 +92,9 @@ class FDTrackPlugin : public IDTrackPlugin {
 		uint64                   m_last_injection_time = 0;
 
 
-		std::unique_ptr<DataBuffer> m_front;           //!< current data to read by game thread
-		std::unique_ptr<DataBuffer> m_back;            //!< last values 
-		std::unique_ptr<DataBuffer> m_injected;        //!< values being injected  
+		std::shared_ptr<DataBuffer> m_front;           //!< current data to read by game thread
+		std::shared_ptr<DataBuffer> m_back;            //!< last values 
+		std::shared_ptr<DataBuffer> m_injected;        //!< values being injected  
 
 		std::vector< TArray<int> > m_last_button_states;
 

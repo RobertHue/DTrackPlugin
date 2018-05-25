@@ -103,7 +103,7 @@ class FDTrackPollThread : public FRunnable {
 		/// parameters 
 		const bool                   m_dtrack2;
 		const std::string            m_dtrack_server_ip;
-		const uint32                 m_dtrack_server_port;
+		const uint32                 m_dtrack_client_port;
 		const EDTrackCoordinateSystemType  m_coordinate_system = EDTrackCoordinateSystemType::CST_Normal;
 
 		/// room coordinate adoption matrix for "normal" setting
@@ -126,5 +126,5 @@ class FDTrackPollThread : public FRunnable {
 
 public:
 		/// a thread safe counter to use so unique names for the threads can be created
-		static FThreadSafeCounter WorkerCounter;
+		static FThreadSafeCounter m_UniqueNameCounter;
 };
