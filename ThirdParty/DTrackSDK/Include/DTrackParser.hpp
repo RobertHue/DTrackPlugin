@@ -101,7 +101,7 @@ public:
 	 * 	\brief	Get number of calibrated standard bodies (as far as known).
 	 *
 	 *	Refers to last received frame.
-	 *	@return		number of calibrated standard bodies
+	 *	@return		number of calibrated standard bodies (6dcal=the number of the adjusted bodies (not only of the tracked ones))
 	 */
 	int getNumBody() const;
 	

@@ -45,6 +45,7 @@ namespace UnrealBuildTool.Rules
 				new string[] {
                     "DTrackPlugin/Public",
                     "DTrackPlugin/Examples",
+                    "DTrackPlugin/Common",
 					// ... add public include paths required here ...
 				}
 				);

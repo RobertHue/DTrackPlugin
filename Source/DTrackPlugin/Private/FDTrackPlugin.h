@@ -57,23 +57,49 @@ class FDTrackPlugin : public IDTrackPlugin {
 
 		/// polling thread injects body tracking data for later retrieval
 		/// call in game thread, not mutexed!
-		void inject_marker_data(const int n_marker_id, const FVector &n_translation, const FRotator &n_rotation);
+		void inject_marker_data(
+			const int n_marker_id, 
+			const bool n_is_being_tracked,
+			const FVector &n_translation = FVector::ZeroVector, 
+			const FRotator &n_rotation = FRotator::ZeroRotator
+		);
 
 		/// polling thread injects body tracking data for later retrieval
 		/// call in game thread, not mutexed!
-		void inject_body_data(const int n_body_id, const FVector &n_translation, const FRotator &n_rotation);
+		void inject_body_data(
+			const int n_body_id, 
+			const bool n_is_being_tracked,
+			const FVector &n_translation = FVector::ZeroVector, 
+			const FRotator &n_rotation = FRotator::ZeroRotator
+		);
 
 		/// polling thread injects flystick data for later retrieval
-		void inject_flystick_data(const int n_flystick_id, const FVector &n_translation, const FRotator &n_rotation,
-					const TArray<int> &n_button_state, const TArray<float> &n_joystick_state);
+		void inject_flystick_data(
+			const int n_flystick_id, 
+			const bool n_is_being_tracked,
+			const FVector &n_translation = FVector::ZeroVector, 
+			const FRotator &n_rotation = FRotator::ZeroRotator,
+			const TArray<int> &n_button_state = TArray<int>(), 
+			const TArray<float> &n_joystick_state = TArray<float>()
+		);
 
 		/// polling thread injects hand tracking data for later retrieval
-		void inject_hand_data(const int n_hand_id, const bool &n_right, const FVector &n_translation, 
-					const FRotator &n_rotation, const TArray<FDTrackFinger> &n_fingers);
+		void inject_hand_data(
+			const int n_hand_id, 
+			const bool n_is_being_tracked,
+			const bool &n_right=false, 
+			const FVector &n_translation = FVector::ZeroVector,
+			const FRotator &n_rotation = FRotator::ZeroRotator, 
+			const TArray<FDTrackFinger> &n_fingers = TArray<FDTrackFinger>()
+		);
 
 		/// polling thread injects hand tracking data for later retrieval
-		void inject_human_model_data(const int n_human_id, const TArray<FDTrackJoint> &n_joints);
-
+		void inject_human_model_data(
+			const int n_human_id, 
+			const bool n_is_being_tracked,
+			const TArray<FDTrackJoint> &n_joints = TArray<FDTrackJoint>()
+		);
+		 
 		/// begin enter values and measure time
 		void begin_injection();
 		void end_injection();
@@ -91,6 +117,7 @@ class FDTrackPlugin : public IDTrackPlugin {
 		uint64                   m_current_injection_time = 0;
 		uint64                   m_last_injection_time = 0;
 
+		/// possible to add a threshold value telling at which quality the locs and rots should be passed along
 
 		std::shared_ptr<DataBuffer> m_front;           //!< current data to read by game thread
 		std::shared_ptr<DataBuffer> m_back;            //!< last values 

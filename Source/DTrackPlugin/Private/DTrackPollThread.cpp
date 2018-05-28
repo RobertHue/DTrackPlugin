@@ -269,9 +269,18 @@ void FDTrackPollThread::handle_bodies() {
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::handle_bodies()"));
 
 	const DTrack_Body_Type_d *body = nullptr;
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"));
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("m_dtrack->getFrameCounter() : %d"), m_dtrack->getFrameCounter());
+	UE_LOG(DTrackPollThreadLog, Display, TEXT("m_dtrack->getNumBody() : %d"), m_dtrack->getNumBody());
+
 	for (int i = 0; i < m_dtrack->getNumBody(); i++) {  // why do we still use int for those counters?
 		body = m_dtrack->getBody(i);
 		checkf(body, TEXT("DTrack API error, body address null"));
+		 
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("body->id : %d"), body->id);
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("body->quality : %f"), body->quality);
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("body->loc : < %f %f %f >"), body->loc[0], body->loc[1], body->loc[2]);
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("body->rot : \n %f %f %f \n %f %f %f \n %f %f %f"), body->rot[0], body->rot[1], body->rot[2], body->rot[3], body->rot[4], body->rot[5], body->rot[6], body->rot[7], body->rot[8]);
 
 		if (body->quality > 0) {	// with quality you can check whether the registered target is being tracked!
 			// Quality below zero means the body is not visible to the system right now. I won't call the interface
@@ -280,10 +289,12 @@ void FDTrackPollThread::handle_bodies() {
 			FRotator rotation = from_dtrack_rotation(body->rot);
 
 	//		FScopeLock lock(m_plugin->bodies_mutex());
-			m_plugin->inject_body_data(body->id, translation, rotation);
+			m_plugin->inject_body_data(body->id, true, translation, rotation);
 		}
-		//return false;	// nothing new; registered body is not visible to the system...
-	
+		else {
+			// here: the registered target is not visible to the system anymore...
+			m_plugin->inject_body_data(body->id, false);
+		}
 	}
 }
 
@@ -315,7 +326,11 @@ void FDTrackPollThread::handle_flysticks() {
 			}
 
 	//		FScopeLock lock(m_plugin->flystick_mutex());
-			m_plugin->inject_flystick_data(flystick->id, translation, rotation, buttons, joysticks);
+			m_plugin->inject_flystick_data(flystick->id, true, translation, rotation, buttons, joysticks);
+		}
+		else {
+			// here: the registered target is not visible to the system anymore...
+			m_plugin->inject_flystick_data(flystick->id, false);
 		}
 	}
 }
@@ -356,7 +371,11 @@ void FDTrackPollThread::handle_hands() {
 			}
 
 	//		FScopeLock lock(m_plugin->hand_mutex());
-			m_plugin->inject_hand_data(hand->id, (hand->lr == 1), translation, rotation, fingers);
+			m_plugin->inject_hand_data(hand->id, true, (hand->lr == 1), translation, rotation, fingers);
+		}
+		else {
+			// here: the registered target is not visible to the system anymore...
+			m_plugin->inject_hand_data(hand->id, false);
 		}
 	}
 }
@@ -388,7 +407,7 @@ void FDTrackPollThread::handle_human_model() {
 		}
 
 	//	FScopeLock lock(m_plugin->human_mutex());
-		m_plugin->inject_human_model_data(human->id, joints);
+		m_plugin->inject_human_model_data(human->id, true, joints);
 	}
 }
 

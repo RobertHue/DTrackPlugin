@@ -70,11 +70,14 @@ struct FDTrackMarker
 
 	GENERATED_BODY()
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
-		FVector  m_location;
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
+	bool  m_isBeingTracked;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
+	FVector  m_location;
 
 	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
-		FRotator m_rotation;
+	FRotator m_rotation;
 };
 
 /**
@@ -86,11 +89,14 @@ struct FDTrackBody
 
 	GENERATED_BODY()
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
-		FVector  m_location;
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
+	bool  m_isBeingTracked;
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
-		FRotator m_rotation;
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
+	FVector  m_location;
+
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
+	FRotator m_rotation;
 };
 
 /**
@@ -102,17 +108,20 @@ struct FDTrackFlystick
 
 	GENERATED_BODY()
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
-		FVector  m_location;
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
+	bool  m_isBeingTracked;
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
-		FRotator m_rotation;
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
+	FVector  m_location;
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "ButtonState"))
-		TArray<int> m_button_states;
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
+	FRotator m_rotation;
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "JoystickState"))
-		TArray<float> m_joystick_states;
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "ButtonState"))
+	TArray<int> m_button_states;
+
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "JoystickState"))
+	TArray<float> m_joystick_states;
 };
 
 /**
@@ -123,6 +132,9 @@ struct FDTrackFinger
 {
 
 	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
+	bool  m_isBeingTracked;
 
 	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Type"))
 	EDTrackFingerType m_type;

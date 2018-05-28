@@ -162,21 +162,22 @@ void FDTrackPlugin::tick(const float n_delta_time, const UDTrackComponent *n_com
 /* Called as lambdas from polling thread, executed in game thread       */
 /************************************************************************/
 
-void FDTrackPlugin::inject_body_data(const int n_body_id, const FVector &n_translation, const FRotator &n_rotation) {
+void FDTrackPlugin::inject_body_data(const int n_body_id, const bool n_is_being_tracked, const FVector &n_translation, const FRotator &n_rotation) {
 
 	check(m_injected);
 	TArray<FDTrackBody> &body_inject = m_injected->m_body_data;
 
-	// resize the TArrray if its currentSize is smalle than the received (ID+1)
+	// resize the TArrray if its currentSize is smaller than the received (ID + 1)
 	if (body_inject.Num() < (n_body_id + 1)) {	
 		body_inject.SetNumZeroed(n_body_id + 1, false);
 	}
 
+	body_inject[n_body_id].m_isBeingTracked = n_is_being_tracked;
 	body_inject[n_body_id].m_location = n_translation;
 	body_inject[n_body_id].m_rotation = n_rotation;
 }
 
-void FDTrackPlugin::inject_flystick_data(const int n_flystick_id, const FVector &n_translation, const FRotator &n_rotation, const TArray<int> &n_button_state, const TArray<float> &n_joystick_state) {
+void FDTrackPlugin::inject_flystick_data(const int n_flystick_id, const bool n_is_being_tracked, const FVector &n_translation, const FRotator &n_rotation, const TArray<int> &n_button_state, const TArray<float> &n_joystick_state) {
 
 	check(m_injected);
 	TArray<FDTrackFlystick> &flystick_inject = m_injected->m_flystick_data;
@@ -191,7 +192,7 @@ void FDTrackPlugin::inject_flystick_data(const int n_flystick_id, const FVector 
 	flystick_inject[n_flystick_id].m_joystick_states = n_joystick_state;
 }
 
-void FDTrackPlugin::inject_hand_data(const int n_hand_id, const bool &n_right, const FVector &n_translation, const FRotator &n_rotation, const TArray<FDTrackFinger> &n_fingers) {
+void FDTrackPlugin::inject_hand_data(const int n_hand_id, const bool n_is_being_tracked, const bool &n_right, const FVector &n_translation, const FRotator &n_rotation, const TArray<FDTrackFinger> &n_fingers) {
 
 	check(m_injected);
 	TArray<FDTrackHand> &hand_inject = m_injected->m_hand_data;
@@ -206,7 +207,7 @@ void FDTrackPlugin::inject_hand_data(const int n_hand_id, const bool &n_right, c
 	hand_inject[n_hand_id].m_fingers = n_fingers;
 }
 
-void FDTrackPlugin::inject_human_model_data(const int n_human_id, const TArray<FDTrackJoint> &n_joints) {
+void FDTrackPlugin::inject_human_model_data(const int n_human_id, const bool n_is_being_tracked, const TArray<FDTrackJoint> &n_joints) {
 	
 	check(m_injected);
 	TArray<FDTrackHuman> &human_inject = m_injected->m_human_model_data;
@@ -240,6 +241,7 @@ void FDTrackPlugin::end_injection() {
 	// solution: 
 	// 1) either just swap when there is really new data from the producer thread (polling thread)
 	// 2) or make the ringbuffer into a queue
+	// 3) or pass along the quality value so that its clear whether the target is being tracked
 
 	std::swap(m_front, m_back);
 	std::swap(m_front, m_injected);
@@ -268,24 +270,13 @@ void FDTrackPlugin::handle_bodies(UDTrackComponent *n_component) {
 			*(current_body.m_rotation.ToString())
 		);
 		
-		n_component->body_tracking(i, current_body.m_location, current_body.m_rotation);
-		/*
-		// This should occur only once while starting up
-		// No extrapolation with one data set
-		if (m_back->m_body_data.Num() != m_front->m_body_data.Num()) {	// in case of one data set:
+		if (current_body.m_isBeingTracked) {
 			n_component->body_tracking(i, current_body.m_location, current_body.m_rotation);
-		} else {	// in case of two data sets => extrapolate 
-			const FDTrackBody &last_body = m_back->m_body_data[i];
-
-			FVector extrapolated_location;
-			extrapolate(extrapolated_location, last_body.m_location, current_body.m_location);
-
-			FRotator extrapolated_rotation;
-			extrapolate(extrapolated_rotation, last_body.m_rotation, current_body.m_rotation);
-
-			n_component->body_tracking(i, extrapolated_location, extrapolated_rotation);
 		}
-		*/
+		else {
+			UE_LOG(LogTemp, Error, TEXT("COMPONENT NOT AVAILABLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+		}
+		// else do nothing ( do not change loc nor rot )
 	}
 }
 
