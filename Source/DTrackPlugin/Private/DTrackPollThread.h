@@ -85,13 +85,14 @@ class FDTrackPollThread : public FRunnable {
 		/// treat human model tracking info and send it to the plug-in
 		void handle_human_model();
 
-		/// translate dtrack rotation matrix to rotator according to selected room calibration
-		FRotator from_dtrack_rotation(const double(&n_matrix)[9]);
-
 		/// translate dtrack translation to unreal space
 		FVector from_dtrack_location(const double(&n_translation)[3]);
 
-		
+		/// translate dtrack rotation matrix to rotator according to selected room calibration
+		FRotator from_dtrack_rotation(const double(&n_matrix)[9]);
+
+	private:
+
 		FRunnableThread   *m_thread;       //!< Thread to run the worker FRunnable on
 		FThreadSafeCounter m_stop_counter; //!< atomic stop counter
 		FDTrackPlugin     *m_plugin;       //!< during runtime, plugin gets data injected
