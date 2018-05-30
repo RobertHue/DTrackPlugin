@@ -29,7 +29,6 @@
 #include "Math/UnrealMathUtility.h"
 #include "DTrackSDK.hpp"
 
-
 IMPLEMENT_MODULE(FDTrackPlugin, DTrackPlugin)
 
 DEFINE_LOG_CATEGORY(DTrackPluginLog);
