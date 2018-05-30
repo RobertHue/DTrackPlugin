@@ -57,9 +57,13 @@ class DTRACKPLUGIN_API UDTrackComponent
 		UPROPERTY(EditAnywhere, meta = (DisplayName = "DTrack Room Calibration", ToolTip = "Set this according to your DTrack system's room calibration"))
 		EDTrackCoordinateSystemType m_coordinate_system = EDTrackCoordinateSystemType::CST_Normal;
 
+	public:
+
 		virtual void TickComponent(float n_delta_time, enum ELevelTick n_tick_type, FActorComponentTickFunction *n_this_tick_function) override;
 		virtual void BeginPlay() override;
 		virtual void EndPlay(const EEndPlayReason::Type n_reason) override;
+
+	public:
 
 		/// body tracking info came in. Take those and relay to the owning actor's interface
 		void body_tracking(const int32 n_body_id, const FVector &n_translation, const FRotator &n_rotation);
