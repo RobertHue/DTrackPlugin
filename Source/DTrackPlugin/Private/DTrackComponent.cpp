@@ -31,19 +31,18 @@
 
 UDTrackComponent::UDTrackComponent(const FObjectInitializer &n_initializer)
 		: Super(n_initializer) {
-
+	UE_LOG(LogTemp, Warning, TEXT("Constructor of UDTrackComponent"));
+	  
  	bWantsInitializeComponent = true;
  	bAutoActivate = true; 
  	PrimaryComponentTick.bCanEverTick = true;
-
-	this->RegisterComponent();
 
 	AActor* actorThatOwnsThisComponent = this->GetOwner();
 	if (actorThatOwnsThisComponent) {
 		FString name = actorThatOwnsThisComponent->GetName();
 		UE_LOG(LogTemp, Warning, TEXT("Name of Actor that owns this component(UDTrackComponent) : %s"), *name);
 	}
-	else {
+	else { 
 		UE_LOG(LogTemp, Warning, TEXT("component(UDTrackComponent) has no Actor that owns it"));
 	}
 
@@ -54,11 +53,22 @@ UDTrackComponent::UDTrackComponent(const FObjectInitializer &n_initializer)
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("component(UDTrackComponent) has no parent scene comp"));
 	}
+
+
+	UE_LOG(LogTemp, Warning, TEXT("Members of UDTrackComponent"));
+	UE_LOG(LogTemp, Warning, TEXT("m_dtrack_server_ip : %s"), *m_dtrack_server_ip);
+	UE_LOG(LogTemp, Warning, TEXT("m_dtrack_client_port : %d"), m_dtrack_client_port);
+	UE_LOG(LogTemp, Warning, TEXT("m_dtrack_2 : %s"), (m_dtrack_2 ? TEXT("True") : TEXT("False")));
 }
 
 void UDTrackComponent::BeginPlay() {
 
 	Super::BeginPlay();
+	UE_LOG(LogTemp, Warning, TEXT("BeginPlay of UDTrackComponent"));
+	UE_LOG(LogTemp, Warning, TEXT("Members of UDTrackComponent"));
+	UE_LOG(LogTemp, Warning, TEXT("m_dtrack_server_ip : %s"), *m_dtrack_server_ip);
+	UE_LOG(LogTemp, Warning, TEXT("m_dtrack_client_port : %d"), m_dtrack_client_port);
+	UE_LOG(LogTemp, Warning, TEXT("m_dtrack_2 : %s"), (m_dtrack_2 ? TEXT("True") : TEXT("False")));
 
 	UE_LOG(DTrackPluginLog, Display, TEXT("DTrack BeginPlay() called"));
 

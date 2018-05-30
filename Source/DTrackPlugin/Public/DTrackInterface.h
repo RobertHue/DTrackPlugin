@@ -36,19 +36,21 @@
  * set in the DTrack system. Choose the one that corresponds with your setup
  * and transformations will be translated into Unreal's standard coordinate 
  * system
+ *
+ * @note: CST stands for coordinate-system
  */
 UENUM(BlueprintType, Category=DTrack)
 enum class EDTrackCoordinateSystemType : uint8 
 {
 
 	/// The normal setting. Right handed, Z is up and Y is front 
-	CST_Normal     UMETA(DisplayName = "DTrack Normal"),
+	CST_Normal			UMETA(DisplayName = "DTrack Normal"),
 
-	/// Powerwall default setting with Y as up
-	CST_Powerwall  UMETA(DisplayName = "DTrack Powerwall"),
+	/// Powerwall default setting with Y as up 
+	CST_Powerwall		UMETA(DisplayName = "DTrack Powerwall"),
 
 	/// Right handed with Z as up and X as front
-	CST_Unreal_Adapted    UMETA(DisplayName = "DTrack Unreal Adapted")
+	CST_Unreal_Adapted	UMETA(DisplayName = "DTrack Unreal Adapted")
 };
 
 UENUM(BlueprintType)
