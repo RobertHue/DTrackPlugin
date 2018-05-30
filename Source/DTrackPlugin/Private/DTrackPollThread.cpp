@@ -48,71 +48,17 @@ FThreadSafeCounter FDTrackPollThread::m_UniqueNameCounter; /// Default construct
 #define RETURN_SUCCESS 1
 #define RETURN_ERROR   0
 
-// can also be used:
-// constexpr double mm_2_cm () { return static_cast<double>(1 / 10.0); }
-#define MM_2_CM 0.1
 
 FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin)
 		: m_plugin(n_plugin)
 		, m_dtrack2(n_client->m_dtrack_2)
 		, m_dtrack_server_ip(TCHAR_TO_UTF8(*n_client->m_dtrack_server_ip))
 		, m_dtrack_client_port(n_client->m_dtrack_client_port)
-		, m_coordinate_system(n_client->m_coordinate_system)
-		, m_stop_counter(0) {
+		, m_stop_counter(0)
+		, m_coord_converter(EDTrackCoordinateSystemType::CST_Unreal_Adapted)
+{
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Constructor of TDTrackPollThread (the factory class for DTrack threads)"));
 
-	// well, let's just say I don't know how to use the initializer list on them
-	FMatrix &trafo_normal = const_cast<FMatrix &>(m_trafo_normal);
-
-	// This is the rotation matrix for coordinate adoption mode "normal"
-	/*  M_Normal = 
-		0  1  0  0
-		1  0  0  0
-		0  0  1  0
-		0  0  0  1
-	*/
-	trafo_normal.M[0][0] = 0; trafo_normal.M[0][1] = 1; trafo_normal.M[0][2] = 0; trafo_normal.M[0][3] = 0;
-	trafo_normal.M[1][0] = 1; trafo_normal.M[1][1] = 0; trafo_normal.M[1][2] = 0; trafo_normal.M[1][3] = 0;
-	trafo_normal.M[2][0] = 0; trafo_normal.M[2][1] = 0; trafo_normal.M[2][2] = 1; trafo_normal.M[2][3] = 0;
-	trafo_normal.M[3][0] = 0; trafo_normal.M[3][1] = 0; trafo_normal.M[3][2] = 0; trafo_normal.M[3][3] = 1;
-
-	// transposed is cached
-	const_cast<FMatrix &>(m_trafo_normal_transposed) = trafo_normal.GetTransposed();
-
-	// This is the rotation matrix for coordinate adoption mode "power wall"
-	/*  M_PowerWall =
-		0  0 -1  0
-		1  0  0  0
-		0  1  0  0
-		0  0  0  1
-	*/
-	FMatrix &trafo_powerwall = const_cast<FMatrix &>(m_trafo_powerwall);
-
-	trafo_powerwall.M[0][0] = 0; trafo_powerwall.M[0][1] = 0; trafo_powerwall.M[0][2] = -1; trafo_powerwall.M[0][3] = 0;
-	trafo_powerwall.M[1][0] = 1; trafo_powerwall.M[1][1] = 0; trafo_powerwall.M[1][2] = 0; trafo_powerwall.M[1][3] = 0;
-	trafo_powerwall.M[2][0] = 0; trafo_powerwall.M[2][1] = 1; trafo_powerwall.M[2][2] = 0; trafo_powerwall.M[2][3] = 0;
-	trafo_powerwall.M[3][0] = 0; trafo_powerwall.M[3][1] = 0; trafo_powerwall.M[3][2] = 0; trafo_powerwall.M[3][3] = 1;
-
-	// transposed is cached
-	const_cast<FMatrix &>(m_trafo_powerwall_transposed) = trafo_powerwall.GetTransposed();
-
-	// This is the rotation matrix for coordinate adoption mode "unreal adapted"
-	/*  M_UnrealAdapted =
-		1  0  0  0
-		0 -1  0  0
-		0  0  1  0
-		0  0  0  1
-	*/
-	FMatrix &trafo_unreal_adapted = const_cast<FMatrix &>(m_trafo_unreal_adapted);
-
-	trafo_unreal_adapted.M[0][0] = 1; trafo_unreal_adapted.M[0][1] = 0; trafo_unreal_adapted.M[0][2] = 0; trafo_unreal_adapted.M[0][3] = 0;
-	trafo_unreal_adapted.M[1][0] = 0; trafo_unreal_adapted.M[1][1] = -1; trafo_unreal_adapted.M[1][2] = 0; trafo_unreal_adapted.M[1][3] = 0;
-	trafo_unreal_adapted.M[2][0] = 0; trafo_unreal_adapted.M[2][1] = 0; trafo_unreal_adapted.M[2][2] = 1; trafo_unreal_adapted.M[2][3] = 0;
-	trafo_unreal_adapted.M[3][0] = 0; trafo_unreal_adapted.M[3][1] = 0; trafo_unreal_adapted.M[3][2] = 0; trafo_unreal_adapted.M[3][3] = 1;
-
-	// transposed is cached
-	const_cast<FMatrix &>(m_trafo_unreal_adapted_transposed) = trafo_unreal_adapted.GetTransposed();
-	 
 
 	// LogStats:Warning: MetaData mismatch.
 	// This warning occurs when you have two threads with the same name
@@ -163,7 +109,7 @@ void FDTrackPollThread::join() {
 
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("WaitForCompletion: %s (%d)"), *m_thread->GetThreadName(), m_thread->GetThreadID());
 	m_thread->WaitForCompletion();
-} 
+}  
 
 bool FDTrackPollThread::Init() {
 
@@ -307,8 +253,8 @@ void FDTrackPollThread::handle_bodies() {
 		if (body->quality > 0) {	// with quality you can check whether the registered target is being tracked!
 			// Quality below zero means the body is not visible to the system right now. I won't call the interface
 
-			FVector translation = from_dtrack_location(body->loc);
-			FRotator rotation = from_dtrack_rotation(body->rot);
+			FVector translation = m_coord_converter.from_dtrack_location(body->loc);
+			FRotator rotation = m_coord_converter.from_dtrack_rotation(body->rot);
 
 	//		FScopeLock lock(m_plugin->bodies_mutex());
 			m_plugin->inject_body_data(body->id, true, translation, rotation);
@@ -330,8 +276,8 @@ void FDTrackPollThread::handle_flysticks() {
 
 		if (flystick->quality > 0) {
 			// Quality below zero means the body is not visible to the system right now. I won't call the interface
-			FVector translation = from_dtrack_location(flystick->loc);
-			FRotator rotation = from_dtrack_rotation(flystick->rot);
+			FVector translation = m_coord_converter.from_dtrack_location(flystick->loc);
+			FRotator rotation = m_coord_converter.from_dtrack_rotation(flystick->rot);
 
 			// create a state vector for the button states
 			TArray<int> buttons;
@@ -366,8 +312,8 @@ void FDTrackPollThread::handle_hands() {
 		checkf(hand, TEXT("DTrack API error, hand address is null"));
 
 		if (hand->quality > 0) {
-			FVector translation = from_dtrack_location(hand->loc);
-			FRotator rotation = from_dtrack_rotation(hand->rot);
+			FVector translation = m_coord_converter.from_dtrack_location(hand->loc);
+			FRotator rotation = m_coord_converter.from_dtrack_rotation(hand->rot);
 			TArray<FDTrackFinger> fingers;
 
 			for (int j = 0; j < hand->nfinger; j++) {
@@ -381,8 +327,8 @@ void FDTrackPollThread::handle_hands() {
 					case 4: finger.m_type = EDTrackFingerType::FT_Pinky; break;
 				}
 
-				finger.m_location = from_dtrack_location(hand->finger[j].loc);
-				finger.m_rotation = from_dtrack_rotation(hand->finger[j].rot);
+				finger.m_location = m_coord_converter.from_dtrack_location(hand->finger[j].loc);
+				finger.m_rotation = m_coord_converter.from_dtrack_rotation(hand->finger[j].rot);
 				finger.m_tip_radius = hand->finger[j].radiustip;
 				finger.m_inner_phalanx_length = hand->finger[j].lengthphalanx[2];
 				finger.m_middle_phalanx_length = hand->finger[j].lengthphalanx[1];
@@ -419,8 +365,8 @@ void FDTrackPollThread::handle_human_model() {
 			// They do carry an ID though so I suppose the caller must be aware of that.
 			if (human->joint[j].quality > 0.1) {
 				joint.m_id = human->joint[j].id;
-				joint.m_location = from_dtrack_location(human->joint[j].loc);
-				joint.m_rotation = from_dtrack_rotation(human->joint[j].rot);
+				joint.m_location = m_coord_converter.from_dtrack_location(human->joint[j].loc);
+				joint.m_rotation = m_coord_converter.from_dtrack_rotation(human->joint[j].rot);
 				joint.m_angles.Add(human->joint[j].ang[0]);   // well, are they Euler angles of the same rot as above or not?
 				joint.m_angles.Add(human->joint[j].ang[1]);
 				joint.m_angles.Add(human->joint[j].ang[2]);
@@ -432,76 +378,5 @@ void FDTrackPollThread::handle_human_model() {
 		m_plugin->inject_human_model_data(human->id, true, joints);
 	}
 }
-
-// translate a DTrack body location (translation in mm) into Unreal Location (in cm)
-FVector FDTrackPollThread::from_dtrack_location(const double(&n_translation)[3]) {
-	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::from_dtrack_location()"));
-
-	FVector ret;
-
-	// DTrack coordinates come in mm with either Z or Y being up, which has to be configured by the user.
-	// I translate to Unreal's Z being up and cm units.
-	switch (m_coordinate_system) {
-		default:
-		case EDTrackCoordinateSystemType::CST_Normal:
-			ret.X =  n_translation[1]  * MM_2_CM;
-			ret.Y =  n_translation[0]  * MM_2_CM;
-			ret.Z =  n_translation[2]  * MM_2_CM;
-			break;
-		case EDTrackCoordinateSystemType::CST_Unreal_Adapted:
-			ret.X =  n_translation[0]  * MM_2_CM;
-			ret.Y = -n_translation[1]  * MM_2_CM;
-			ret.Z =  n_translation[2]  * MM_2_CM;
-			break;  
-		case EDTrackCoordinateSystemType::CST_Powerwall:
-			ret.X = -n_translation[2]  * MM_2_CM;
-			ret.Y =  n_translation[0]  * MM_2_CM;
-			ret.Z =  n_translation[1]  * MM_2_CM;
-			break;
-	}
-
-	return ret;
-}
-
-// translate DTrack 3x3 rotation matrix to FRotator according to selected room calibration
-// @ToDo needs a bit more and better description
-FRotator FDTrackPollThread::from_dtrack_rotation(const double(&n_matrix)[9]) {
-	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::from_dtrack_rotation()"));
-
-	// take DTrack matrix and put the values into FMatrix 
-	// ( M[RowIndex][ColumnIndex], DTrack matrix comes column-wise )
-	FMatrix r;
-	r.M[0][0] = n_matrix[0 + 0]; r.M[0][1] = n_matrix[0 + 3]; r.M[0][2] = n_matrix[0 + 6]; r.M[0][3] = 0.0;
-	r.M[1][0] = n_matrix[1 + 0]; r.M[1][1] = n_matrix[1 + 3]; r.M[1][2] = n_matrix[1 + 6]; r.M[1][3] = 0.0;
-	r.M[2][0] = n_matrix[2 + 0]; r.M[2][1] = n_matrix[2 + 3]; r.M[2][2] = n_matrix[2 + 6]; r.M[2][3] = 0.0;
-	r.M[3][0] = 0.0;			 r.M[3][1] = 0.0;			  r.M[3][2] = 0.0;			   r.M[3][3] = 1.0;
-
-	FMatrix r_adapted;
-
-	switch (m_coordinate_system) {
-		default:
-		case EDTrackCoordinateSystemType::CST_Normal:
-			r_adapted = m_trafo_normal * r * m_trafo_normal_transposed;
-			break;
-
-		case EDTrackCoordinateSystemType::CST_Unreal_Adapted:
-			r_adapted = m_trafo_unreal_adapted * r * m_trafo_unreal_adapted_transposed;
-			break;
-
-		case EDTrackCoordinateSystemType::CST_Powerwall:
-			r_adapted = m_trafo_powerwall * r * m_trafo_powerwall_transposed;
-			break;
-	}
-
-	return r_adapted.GetTransposed().Rotator();	// FRotator is the Rotation representation in Euler angles.
-}
-
-
-
-
-
-
-
-
 
 #undef LOCTEXT_NAMESPACE

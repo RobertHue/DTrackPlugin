@@ -29,103 +29,84 @@
 #include "CoreMinimal.h"
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeCounter.h"
+#include "Helper/CoordinateConverter.h"
 
-#include <memory>
+#include <memory> 
 #include <string>
 
 class FDTrackPollThread;
 class DTrackSDK;
-class DTrackComponent;
+class DTrackComponent; 
 class FDTrackPlugin;
 
 /** @brief thread encapsulating all ART SDK interaction
  */
 class FDTrackPollThread : public FRunnable {
 
-	public:
-		FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin);
-		~FDTrackPollThread();
+public:
+	FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin);
+	~FDTrackPollThread();
 		
-		/** Singleton instance, can access the thread any time via static accessor
-		 */
-		static FDTrackPollThread *m_runnable;
+	/** Singleton instance, can access the thread any time via static accessor
+		*/
+	static FDTrackPollThread *m_runnable;
 
-		/**	Start the thread and the worker from static
-			This function returns a handle to the newly started instance.
-		 */
-		static FDTrackPollThread* start(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin);
+	/**	Start the thread and the worker from static
+		This function returns a handle to the newly started instance.
+		*/
+	static FDTrackPollThread* start(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin);
 	
-		void interrupt();
-		void join();
+	void interrupt();
+	void join();
 
-		/// does nothing, SDK is initialized in run
-		bool Init() override;
+	/// does nothing, SDK is initialized in run
+	bool Init() override;
 
-		// 1 is success
-		// 0 is failure
-		uint32 Run() override;
+	// 1 is success
+	// 0 is failure
+	uint32 Run() override;
 
-		/// This is called if a thread is requested to terminate early.
-		void Stop() override;
+	/// This is called if a thread is requested to terminate early.
+	void Stop() override;
 
-		/// empty teardown, Run() will cleanup
-		void Exit() override;
+	/// empty teardown, Run() will cleanup
+	void Exit() override;
 
-	private:
+private:
 
-		/// after receive, treat body info and send it to the plug-in
-		void handle_bodies();
+	/// after receive, treat body info and send it to the plug-in
+	void handle_bodies();
 
-		/// after receive, treat flystick info and send it to the plug-in
-		void handle_flysticks();
+	/// after receive, treat flystick info and send it to the plug-in
+	void handle_flysticks();
 
-		/// treat hand tracking info and send it to the plug-in
-		void handle_hands();
+	/// treat hand tracking info and send it to the plug-in
+	void handle_hands();
 
-		/// treat human model tracking info and send it to the plug-in
-		void handle_human_model();
+	/// treat human model tracking info and send it to the plug-in
+	void handle_human_model();
 
-		/// translate dtrack translation to unreal space
-		FVector from_dtrack_location(const double(&n_translation)[3]);
+private:
 
-		/// translate dtrack rotation matrix to rotator according to selected room calibration
-		FRotator from_dtrack_rotation(const double(&n_matrix)[9]);
-
-	private:
-
-		FRunnableThread   *m_thread;       //!< Thread to run the worker FRunnable on
-		FThreadSafeCounter m_stop_counter; //!< atomic stop counter
-		FDTrackPlugin     *m_plugin;       //!< during runtime, plugin gets data injected
+	FRunnableThread   *m_thread;       //!< Thread to run the worker FRunnable on
+	FThreadSafeCounter m_stop_counter; //!< atomic stop counter
+	FDTrackPlugin     *m_plugin;       //!< during runtime, plugin gets data injected
 
 
-		/// this is the DTrack SDK main object. I'll have one one owned here as I do not know if they can coexist
-		std::unique_ptr< DTrackSDK > m_dtrack;
+	/// this is the DTrack SDK main object. I'll have one one owned here as I do not know if they can coexist
+	std::unique_ptr< DTrackSDK > m_dtrack;
 
-		/// parameters 
-		const bool                   m_dtrack2;
-		const std::string            m_dtrack_server_ip;
-		const uint32                 m_dtrack_client_port;
-		const EDTrackCoordinateSystemType  m_coordinate_system = EDTrackCoordinateSystemType::CST_Normal;
+	/// parameters 
+	const bool                   m_dtrack2;
+	const std::string            m_dtrack_server_ip;
+	const uint32                 m_dtrack_client_port;
 
-		/// room coordinate adoption matrix for "normal" setting
-		const FMatrix  m_trafo_normal;
+private:
 
-		/// transposed variant cached
-		const FMatrix  m_trafo_normal_transposed;
-
-		/// room coordinate adoption matrix for "power wall" setting
-		const FMatrix  m_trafo_powerwall;
-
-		/// transposed variant cached
-		const FMatrix  m_trafo_powerwall_transposed;
-
-		/// room coordinate adoption matrix for "unreal adapted" setting
-		const FMatrix  m_trafo_unreal_adapted;
-
-		/// transposed variant cached
-		const FMatrix  m_trafo_unreal_adapted_transposed;
+	FCoordinateConverter m_coord_converter;
 
 public:
-		/// a thread safe counter to use so unique names for the threads can be created
-		static FThreadSafeCounter m_UniqueNameCounter;
+
+	/// a thread safe counter to use so unique names for the threads can be created
+	static FThreadSafeCounter m_UniqueNameCounter;
 };
