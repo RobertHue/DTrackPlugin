@@ -29,14 +29,13 @@
 #include "Math/UnrealMathUtility.h"
 #include "DTrackSDK.hpp"
 
-IMPLEMENT_MODULE(FDTrackPlugin, DTrackPlugin)
 
 DEFINE_LOG_CATEGORY(DTrackPluginLog);
 DEFINE_LOG_CATEGORY(DTrackPollThreadLog);
 
 #define LOCTEXT_NAMESPACE "DTrackPlugin"
 
-#define PLUGIN_VERSION "0.3.0"
+#define PLUGIN_VERSION "1"
 
 
 void FDTrackPlugin::StartupModule() {
