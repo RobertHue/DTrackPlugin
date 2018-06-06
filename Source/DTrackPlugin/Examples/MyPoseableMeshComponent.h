@@ -55,6 +55,7 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 public:
+	/*
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
 		class USkeletalMesh* m_pAltMeshAsset;
 
@@ -63,7 +64,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = ATEST)
 		class USkeleton* m_pSkeleton;
-
+		*/
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	/*********************************/
@@ -91,6 +92,43 @@ public:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
-	FRotator defaultUpperArmLRot;
-	FRotator defaultLowerArmLRot;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		TMap<FString, int32> testMap;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_hand_r = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_thumb_01_r = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_thumb_02_r = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_thumb_03_r = 3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_index_01_r = 4;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_index_02_r = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_index_03_r = 6;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_middle_01_r = 7;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_middle_02_r = 8;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_middle_03_r = 9;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_ring_01_r = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_ring_02_r = 11;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_ring_03_r = 12;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_pinky_01_r = 13;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_pinky_02_r = 14;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ATEST")
+		int32 m_pinky_03_r = 15;
+
 };

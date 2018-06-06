@@ -55,7 +55,7 @@ FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPl
 		, m_dtrack_server_ip(TCHAR_TO_UTF8(*n_client->m_dtrack_server_ip))
 		, m_dtrack_client_port(n_client->m_dtrack_client_port)
 		, m_stop_counter(0)
-		, m_coord_converter(EDTrackCoordinateSystemType::CST_Unreal_Adapted)
+		, m_coord_converter(n_client->m_coordinate_system)
 {
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Constructor of TDTrackPollThread (the factory class for DTrack threads)"));
 
@@ -179,12 +179,10 @@ uint32 FDTrackPollThread::Run() {
 			m_plugin->begin_injection();	// set some timestamp of this measurement
 
 			// treat body info and cache results into plug-in
-			handle_bodies();	
-
-			// TODO some tests:
-			// handle_flysticks();
-			// handle_hands();
-			// handle_human_model();
+			handle_bodies();
+			handle_flysticks();
+			handle_hands();
+			handle_human_model();
 		
 			// collect data here in this reactive system and forward them with end_injection()
 			// TODO Nice to have:    Forward nothing if there is no new data! (quality==0)

@@ -3,6 +3,14 @@
 #include "CoreMinimal.h"
 #include "DTrackInterface.h"
 
+/*
+ * @class: 
+ * this class uses the concept from https://www.geometrictools.com/Documentation/ConvertingBetweenCoordinateSystems.pdf
+ * to convert from right-handed coordinate system (DTrack) to left-handed coordinate system (Unreal-Engine 4)
+ * it does this by flipping one axis direction, namely the z-axis (-Z): this operation is represented by m_Sz
+ * 
+ * 
+ */
 class FCoordinateConverter 
 {
 
@@ -17,6 +25,7 @@ public:
 	/// translate dtrack rotation matrix to rotator according to selected room calibration
 	FRotator from_dtrack_rotation(const double(&n_matrix)[9]);
 
+	const EDTrackCoordinateSystemType getCoordinateSystemType() const;
 
 private:
 	/// room coordinate adoption matrix for "normal" setting
@@ -36,6 +45,10 @@ private:
 
 	/// transposed variant cached
 	const FMatrix  m_trafo_unreal_adapted_transposed;
+
+
+
+	const FMatrix  m_Sz;	// the Diagonal-Matrix Diag(1,1,-1) to flip the z-axis direction
 
 	const EDTrackCoordinateSystemType  m_coordinate_system;
 

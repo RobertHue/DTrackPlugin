@@ -114,8 +114,6 @@ void UMyPoseableMeshComponent::BeginPlay()
 		FString name = actorThatOwnsThisComponent->GetName();
 		UE_LOG(LogTemp, Warning, TEXT("Name of Actor that owns this component(UMyPoseableMeshComp) : %s"), *name);
 	}
-	defaultUpperArmLRot = this->GetBoneRotationByName("upperarm_l", EBoneSpaces::WorldSpace);
-	defaultLowerArmLRot = this->GetBoneRotationByName("lowerarm_l", EBoneSpaces::WorldSpace);
 }
 
 void UMyPoseableMeshComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -128,7 +126,7 @@ void UMyPoseableMeshComponent::OnBodyData_Implementation(const int32 BodyID, con
 	UE_LOG(LogTemp, Warning, TEXT("OnBodyData_Implementation"));
 
 
-	if (BodyID == 0) {        // The ID of the tracked body. There can be many, depending on your setup.
+	if (BodyID == 1) {        // The ID of the tracked body. There can be many, depending on your setup.
 		FVector tmp = Position;
 		tmp.X = tmp.X - 200;
 		tmp.Z = tmp.Z + 200;
@@ -172,6 +170,26 @@ void UMyPoseableMeshComponent::OnFlystickJoystick_Implementation(const int32 Fly
 void UMyPoseableMeshComponent::OnHandTracking_Implementation(const int32 HandID, const bool Right, const FVector & Translation, const FRotator & Rotation, const TArray<FDTrackFinger>& Fingers)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnHandTracking_Implementation"));
+
+
+	// HandID is the ID of the tracked body. There can be many, depending on your setup.
+	if (HandID == m_hand_r) { this->SetBoneRotationByName("hand_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_thumb_01_r) { this->SetBoneRotationByName("thumb_01_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_thumb_02_r) { this->SetBoneRotationByName("thumb_02_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_thumb_03_r) { this->SetBoneRotationByName("thumb_03_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_index_01_r) { this->SetBoneRotationByName("index_01_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_index_02_r) { this->SetBoneRotationByName("index_02_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_index_03_r) { this->SetBoneRotationByName("index_03_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_middle_01_r) { this->SetBoneRotationByName("middle_01_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_middle_02_r) { this->SetBoneRotationByName("middle_02_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_middle_03_r) { this->SetBoneRotationByName("middle_03_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_ring_01_r) { this->SetBoneRotationByName("ring_01_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_ring_02_r) { this->SetBoneRotationByName("ring_02_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_ring_03_r) { this->SetBoneRotationByName("ring_03_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_pinky_01_r) { this->SetBoneRotationByName("pinky_01_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_pinky_02_r) { this->SetBoneRotationByName("pinky_02_r", Rotation, EBoneSpaces::WorldSpace); }
+	else if (HandID == m_pinky_03_r) { this->SetBoneRotationByName("pinky_03_r", Rotation, EBoneSpaces::WorldSpace); }
+	else { UE_LOG(LogTemp, Warning, TEXT("HandID of %d is not assigned!"), HandID); } 
 }
 
 void UMyPoseableMeshComponent::OnHumanModel_Implementation(const int32 ModelID, const TArray<FDTrackJoint>& Joints)
