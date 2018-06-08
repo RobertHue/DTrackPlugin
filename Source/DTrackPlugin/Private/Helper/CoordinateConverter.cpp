@@ -112,7 +112,12 @@ FRotator FCoordinateConverter::from_dtrack_rotation(const double(&n_matrix)[9])
 	default: 
 	case EDTrackCoordinateSystemType::CST_Normal:
 		UE_LOG(DTrackPollThreadLog, Display, TEXT(":::::CST_Normal Calculation:::::"));
-		r_adapted = m_trafo_normal * r * m_trafo_normal_transposed;	// m_Sz * R_l * m_Sz <- needs to be transposed due to unreal interface
+		r_adapted = m_trafo_normal * r * m_trafo_normal_transposed;
+		break;   
+
+	case EDTrackCoordinateSystemType::CST_Unreal_Adapted:
+		UE_LOG(DTrackPollThreadLog, Display, TEXT(":::::CST_Unreal_Adapted Calculation:::::"));
+		r_adapted = m_trafo_unreal_adapted * r * m_trafo_unreal_adapted_transposed;	// m_Sz * R_l * m_Sz <- needs to be transposed due to unreal interface
 
 		// equivalent to:
 		// r_adapted = r.GetTransposed();
@@ -121,11 +126,6 @@ FRotator FCoordinateConverter::from_dtrack_rotation(const double(&n_matrix)[9])
 		// r_adapted.M[2][0] = -r_adapted.M[2][0];
 		// r_adapted.M[2][1] = -r_adapted.M[2][1];
 		// r_adapted = r_adapted * combinedRotMatrix.GetTransposed();
-		break;   
-
-	case EDTrackCoordinateSystemType::CST_Unreal_Adapted:
-		UE_LOG(DTrackPollThreadLog, Display, TEXT(":::::CST_Unreal_Adapted Calculation:::::"));
-		r_adapted = m_trafo_unreal_adapted * r * m_trafo_unreal_adapted_transposed;
 		break;
 		 
 	case EDTrackCoordinateSystemType::CST_Powerwall:

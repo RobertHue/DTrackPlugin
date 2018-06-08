@@ -40,6 +40,7 @@ class DTrackComponent;
 class FDTrackPlugin;
 
 /** @brief thread encapsulating all ART SDK interaction
+ * A runnable object is an object that is "run" on an arbitrary thread. Which is created inside this constructor
  */
 class FDTrackPollThread : public FRunnable {
 
@@ -59,11 +60,17 @@ public:
 	void interrupt();
 	void join();
 
+public:
+	////////////////////
+	// FRunnable
+	////////////////////
+
 	/// does nothing, SDK is initialized in run
 	bool Init() override;
 
-	// 1 is success
-	// 0 is failure
+	/// Is called once when the Init was successful
+	/// @return The exit code of the runnable object
+	///			1 is success,  0 is failure
 	uint32 Run() override;
 
 	/// This is called if a thread is requested to terminate early.
@@ -109,4 +116,10 @@ public:
 
 	/// a thread safe counter to use so unique names for the threads can be created
 	static FThreadSafeCounter m_UniqueNameCounter;
+
+public:
+	/// some test function to kill the thread... or check whether its still active...
+	FRunnableThread * GetRunnableThread() {	// todo do not use in production
+		return m_thread;
+	}
 };

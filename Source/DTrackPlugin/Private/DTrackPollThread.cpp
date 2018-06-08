@@ -38,7 +38,7 @@
 #include "Async.h" 
 
 #define LOCTEXT_NAMESPACE "DTrackPlugin"
-
+ 
 FDTrackPollThread *FDTrackPollThread::m_runnable = nullptr;
 
 FThreadSafeCounter FDTrackPollThread::m_UniqueNameCounter; /// Default constructor. Initializes the counter to 0.
@@ -48,8 +48,9 @@ FThreadSafeCounter FDTrackPollThread::m_UniqueNameCounter; /// Default construct
 #define RETURN_SUCCESS 1
 #define RETURN_ERROR   0
 
-
-FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin)
+// n_client can be accessed indirectly through the singleton...
+// plugin can be accessed anyways because its a singleton...
+FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPlugin *n_plugin) 
 		: m_plugin(n_plugin)
 		, m_dtrack2(n_client->m_dtrack_2)
 		, m_dtrack_server_ip(TCHAR_TO_UTF8(*n_client->m_dtrack_server_ip))
@@ -71,7 +72,7 @@ FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPl
 
 	// Create the actual thread
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Create new Thread: %s"), *ThreadName);
-	m_thread = FRunnableThread::Create(this, *ThreadName); 
+	m_thread = FRunnableThread::Create(this, *ThreadName);
 
 
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Created: %s (%d)"), *m_thread->GetThreadName(), m_thread->GetThreadID());
@@ -208,6 +209,18 @@ uint32 FDTrackPollThread::Run() {
 			UE_LOG(DTrackPollThreadLog, Display, TEXT("Stop command was unsuccessful"));
 		}
 
+		std::string answer;
+		int retVal;
+
+		retVal = m_dtrack->sendDTrack2Command("dtrack2 get status active", &answer);
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("retVal : %d"), retVal);
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("answer : %s"), *FString(answer.c_str()));
+
+		retVal = m_dtrack->sendDTrack2Command("dtrack2 tracking stop", &answer);
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("retVal : %d"), retVal);
+		UE_LOG(DTrackPollThreadLog, Display, TEXT("answer : %s"), *FString(answer.c_str()));
+
+
 		if (m_dtrack->isCommandInterfaceValid()) {
 			UE_LOG(DTrackPollThreadLog, Display, TEXT("TCP connection for DTrack2 commands is active."));
 		} else {
@@ -227,7 +240,7 @@ void FDTrackPollThread::Stop() {
 
 
 void FDTrackPollThread::Exit() {
-
+	// Here's where we can do any cleanup we want to 
 }
 
 

@@ -48,7 +48,7 @@ void FDTrackPlugin::StartupModule() {
 	m_injected.reset(new DataBuffer);
 }
 
-void FDTrackPlugin::ShutdownModule() {
+void FDTrackPlugin::ShutdownModule() { // is not even being callled!? why...
 	UE_LOG(LogTemp, Warning, TEXT("start ShutdownModule"));
 
 	// Another wait for potential asyncs. 
@@ -93,10 +93,10 @@ void FDTrackPlugin::start_up(UDTrackComponent *n_client) {
 void FDTrackPlugin::remove(class UDTrackComponent *n_client) {
 	UE_LOG(LogTemp, Warning, TEXT("start FDTrackPlugin::remove"));
 
-	UE_LOG(LogTemp, Warning, TEXT("remove all all added clients (aka the UDTrackComponents)"));
+	UE_LOG(LogTemp, Warning, TEXT("remove client n_client (aka the UDTrackComponents)"));
 	m_clients.RemoveAll([&](const TWeakObjectPtr<UDTrackComponent> p) {
 		return p.Get() == n_client;
-	});
+	}); 
 
 	// we have no reason to run anymore
 	if (m_polling_thread && (m_clients.Num() == 0)) {
