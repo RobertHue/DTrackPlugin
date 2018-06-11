@@ -54,6 +54,7 @@ namespace UnrealBuildTool.Rules
 				new string[] {
 					"DTrackPlugin/Private",
                     Path.Combine(ThirdPartyPath, "DTrackSDK", "Include"),
+                    Path.Combine(ThirdPartyPath, "eigen", ""),
 					// ... add other private include paths required here ...
 				}
 			);

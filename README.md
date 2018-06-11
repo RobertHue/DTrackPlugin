@@ -25,6 +25,12 @@ need to code. The project can still focus on Blueprint usage). In your project's
 create a directory named `Plugins` if it is not already there. Then clone or checkout 
 this repository into this folder and regenerate your project. That's all.
 
+### for adding the submodule eigen
+
+Run "submodule update --init --recursive"
+
+Alternatively run "git clone --recursive <project url>"
+
 ## Usage
 Using this functionality is generally focused on enhancing any Actor with tracking information. 
 This can happen in either C++ or Blueprint. There's usually 3 steps involved:
