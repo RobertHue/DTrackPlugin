@@ -248,18 +248,18 @@ void FDTrackPollThread::handle_bodies() {
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::handle_bodies()"));
 
 	const DTrack_Body_Type_d *body = nullptr;
-	UE_LOG(DTrackPollThreadLog, Display, TEXT("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"));
-	UE_LOG(DTrackPollThreadLog, Display, TEXT("m_dtrack->getFrameCounter() : %d"), m_dtrack->getFrameCounter());
-	UE_LOG(DTrackPollThreadLog, Display, TEXT("m_dtrack->getNumBody() : %d"), m_dtrack->getNumBody());
+	//UE_LOG(DTrackPollThreadLog, Display, TEXT("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"));
+	//UE_LOG(DTrackPollThreadLog, Display, TEXT("m_dtrack->getFrameCounter() : %d"), m_dtrack->getFrameCounter());
+	//UE_LOG(DTrackPollThreadLog, Display, TEXT("m_dtrack->getNumBody() : %d"), m_dtrack->getNumBody());
 
 	for (int i = 0; i < m_dtrack->getNumBody(); i++) {  // why do we still use int for those counters?
 		body = m_dtrack->getBody(i);
 		checkf(body, TEXT("DTrack API error, body address null"));
 		 
-		UE_LOG(DTrackPollThreadLog, Display, TEXT("body->id : %d"), body->id);
-		UE_LOG(DTrackPollThreadLog, Display, TEXT("body->quality : %f"), body->quality);
-		UE_LOG(DTrackPollThreadLog, Display, TEXT("body->loc : < %f %f %f >"), body->loc[0], body->loc[1], body->loc[2]);
-		UE_LOG(DTrackPollThreadLog, Display, TEXT("body->rot : \n %f %f %f \n %f %f %f \n %f %f %f"), body->rot[0], body->rot[1], body->rot[2], body->rot[3], body->rot[4], body->rot[5], body->rot[6], body->rot[7], body->rot[8]);
+		//UE_LOG(DTrackPollThreadLog, Display, TEXT("body->id : %d"), body->id);
+		//UE_LOG(DTrackPollThreadLog, Display, TEXT("body->quality : %f"), body->quality);
+		//UE_LOG(DTrackPollThreadLog, Display, TEXT("body->loc : < %f %f %f >"), body->loc[0], body->loc[1], body->loc[2]);
+		//UE_LOG(DTrackPollThreadLog, Display, TEXT("body->rot : \n %f %f %f \n %f %f %f \n %f %f %f"), body->rot[0], body->rot[1], body->rot[2], body->rot[3], body->rot[4], body->rot[5], body->rot[6], body->rot[7], body->rot[8]);
 
 		if (body->quality > 0) {	// with quality you can check whether the registered target is being tracked!
 			// Quality below zero means the body is not visible to the system right now. I won't call the interface
@@ -267,7 +267,6 @@ void FDTrackPollThread::handle_bodies() {
 			FVector translation = m_coord_converter.from_dtrack_location(body->loc);
 			FRotator rotation = m_coord_converter.from_dtrack_rotation(body->rot);
 
-	//		FScopeLock lock(m_plugin->bodies_mutex());
 			m_plugin->inject_body_data(body->id, true, translation, rotation);
 		}
 		else {
@@ -304,7 +303,6 @@ void FDTrackPollThread::handle_flysticks() {
 				joysticks[idx] = static_cast<float>(flystick->joystick[idx]);
 			}
 
-	//		FScopeLock lock(m_plugin->flystick_mutex());
 			m_plugin->inject_flystick_data(flystick->id, true, translation, rotation, buttons, joysticks);
 		}
 		else {
@@ -325,32 +323,43 @@ void FDTrackPollThread::handle_hands() {
 		if (hand->quality > 0) {
 			FVector translation = m_coord_converter.from_dtrack_location(hand->loc);
 			FRotator rotation = m_coord_converter.from_dtrack_rotation(hand->rot);
-			TArray<FDTrackFinger> fingers;
+			TArray<FDTrackFinger> fingers;	// an array of fingers
 
+			// number of the tracked fingers (3 or 5)
 			for (int j = 0; j < hand->nfinger; j++) {
 				FDTrackFinger finger;
 				switch (j) {     // this is mostly to allow for the blueprint to be a 
 								 // little more expressive than using assumptions about the index' meaning
-					case 0: finger.m_type = EDTrackFingerType::FT_Thumb; break;
-					case 1: finger.m_type = EDTrackFingerType::FT_Index; break;
-					case 2: finger.m_type = EDTrackFingerType::FT_Middle; break;
-					case 3: finger.m_type = EDTrackFingerType::FT_Ring; break;
-					case 4: finger.m_type = EDTrackFingerType::FT_Pinky; break;
+					case 0: finger.m_type = EDTrackFingerType::FT_Thumb;	break;
+					case 1: finger.m_type = EDTrackFingerType::FT_Index;	break;
+					case 2: finger.m_type = EDTrackFingerType::FT_Middle;	break;
+					case 3: finger.m_type = EDTrackFingerType::FT_Ring;		break;
+					case 4: finger.m_type = EDTrackFingerType::FT_Pinky;	break;
 				}
 
 				finger.m_location = m_coord_converter.from_dtrack_location(hand->finger[j].loc);
 				finger.m_rotation = m_coord_converter.from_dtrack_rotation(hand->finger[j].rot);
-				finger.m_tip_radius = hand->finger[j].radiustip;
-				finger.m_inner_phalanx_length = hand->finger[j].lengthphalanx[2];
+
+				finger.m_tip_radius = hand->finger[j].radiustip;	// the radius of the finger tip to identify its position and orientation
+
+				finger.m_inner_phalanx_length  = hand->finger[j].lengthphalanx[2];
 				finger.m_middle_phalanx_length = hand->finger[j].lengthphalanx[1];
-				finger.m_outer_phalanx_length = hand->finger[j].lengthphalanx[0];
+				finger.m_outer_phalanx_length  = hand->finger[j].lengthphalanx[0];
+
 				finger.m_inner_middle_phalanx_angle = hand->finger[j].anglephalanx[1];
 				finger.m_middle_outer_phalanx_angle = hand->finger[j].anglephalanx[0];
+
+				// angles between the single phalanxes as well as their respective lengths.
 				fingers.Add(std::move(finger));
 			}
 
-	//		FScopeLock lock(m_plugin->hand_mutex());
-			m_plugin->inject_hand_data(hand->id, true, (hand->lr == 1), translation, rotation, fingers);
+			// a value to distinguish between right and left hand,
+			m_plugin->inject_hand_data(
+				hand->id,	// hand-id
+				true,  // indicate whether new data has arrived (is_BeingTracked)
+				(hand->lr == 1), translation, rotation, // hand related (left or right hand, pos, rot)
+				fingers	// also pass the array of fingers (fingers do not have an id)
+			);
 		}
 		else {
 			// here: the registered target is not visible to the system anymore...
@@ -385,7 +394,6 @@ void FDTrackPollThread::handle_human_model() {
 			}
 		}
 
-	//	FScopeLock lock(m_plugin->human_mutex());
 		m_plugin->inject_human_model_data(human->id, true, joints);
 	}
 }

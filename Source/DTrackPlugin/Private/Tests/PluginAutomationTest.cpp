@@ -1,13 +1,8 @@
 #pragma once
 #include "PluginAutomationTest.h"	// must be the first header included!
 
-// #define _USE_MATH_DEFINES
-#include <cmath>
-#include <cstdlib>
-#ifndef M_PI
-	#define M_PI	3.14159265358979323846   // pi
-#endif
 
+#include <cstdlib>
 #include "AutomationTest.h"
 #include "CoreMinimal.h"
 #include "DTrackPollThread.h"
@@ -22,8 +17,6 @@ DEFINE_LOG_CATEGORY_STATIC(LogEngineAutomationTests, Log, All);
 DEFINE_LOG_CATEGORY_STATIC(LogAnalytics, Log, All);
 
 
-constexpr double DEG_TO_RAD = (double)(M_PI) / 180.0f;
-constexpr double RAD_TO_DEG = (double)(180.0f) / M_PI;
 
 /////////////////////////////////////////////////////////////////////
 

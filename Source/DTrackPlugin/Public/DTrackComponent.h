@@ -37,8 +37,8 @@
 UCLASS(ClassGroup="Input Controller", meta=(BlueprintSpawnableComponent))
 class DTRACKPLUGIN_API UDTrackComponent 
 	: 
-		// public UActorComponent 
-		public USceneComponent
+		public UActorComponent 
+		// public USceneComponent
 {
 
 	GENERATED_UCLASS_BODY()
@@ -94,7 +94,4 @@ class DTRACKPLUGIN_API UDTrackComponent
 	private:
 
 		class IDTrackPlugin *m_plugin = nullptr;   //!< will cache that to avoid calling Module getter in every tick
-
-		void checkParentClass();
-
 };

@@ -3,6 +3,14 @@
 #include "CoreMinimal.h"
 #include "DTrackInterface.h"
 
+// #define _USE_MATH_DEFINES
+#include <cmath>
+#ifndef M_PI
+#define M_PI	3.14159265358979323846   // pi
+#endif
+constexpr double DEG_TO_RAD = (double)(M_PI) / 180.0f;
+constexpr double RAD_TO_DEG = (double)(180.0f) / M_PI;
+
 /*
  * @class: 
  * this class uses the concept from https://www.geometrictools.com/Documentation/ConvertingBetweenCoordinateSystems.pdf

@@ -265,7 +265,7 @@ void FDTrackPlugin::handle_bodies(UDTrackComponent *n_component) {
 
 		const FDTrackBody &current_body = m_front->m_body_data[i];
 
-		UE_LOG(LogTemp, Error, TEXT("current_body loc : %s rot : %s"), 
+		UE_LOG(LogTemp, Warning, TEXT("current_body loc : %s rot : %s"),
 			*(current_body.m_location.ToString()), 
 			*(current_body.m_rotation.ToString())
 		);
@@ -274,7 +274,7 @@ void FDTrackPlugin::handle_bodies(UDTrackComponent *n_component) {
 			n_component->body_tracking(i, current_body.m_location, current_body.m_rotation);
 		}
 		else {
-			UE_LOG(LogTemp, Error, TEXT("COMPONENT NOT AVAILABLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+			UE_LOG(LogTemp, Warning, TEXT("COMPONENT NOT AVAILABLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 		}
 		// else do nothing ( do not change loc nor rot )
 	}
