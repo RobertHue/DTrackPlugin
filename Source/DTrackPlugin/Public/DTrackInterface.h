@@ -96,14 +96,14 @@ struct FDTrackBody
 {
 
 	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
+		
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
 	bool  m_isBeingTracked;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Location"))
 	FVector  m_location;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Rotation"))
 	FRotator m_rotation;
 };
 
@@ -141,37 +141,37 @@ struct FDTrackFinger
 
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
 	bool  m_isBeingTracked;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Type"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Type"))
 	EDTrackFingerType m_type;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Location"))
 	FVector  m_location;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Rotation"))
 	FRotator m_rotation;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Radius Of Tip"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Radius Of Tip"))
 	float    m_tip_radius;
 
 	// phalanges (plural of phalanx) will not only come and getcha with their spears 
 	// but are also the bones that form your fingers. Imagine that!
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Inner Phalanx Length"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Inner Phalanx Length"))
 	float    m_inner_phalanx_length;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Middle Phalanx Length"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Middle Phalanx Length"))
 	float    m_middle_phalanx_length;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Outer Phalanx Length"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Outer Phalanx Length"))
 	float    m_outer_phalanx_length;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Inner Middle Phalanx Angle"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Inner Middle Phalanx Angle"))
 	float    m_inner_middle_phalanx_angle;
 
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Middle Outer Phalanx Angle"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Middle Outer Phalanx Angle"))
 	float    m_middle_outer_phalanx_angle;
 };
 
@@ -186,16 +186,16 @@ struct FDTrackHand
 	GENERATED_BODY()
 
 		/// true if this is the right hand
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Right"))
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Right"))
 		bool m_right;
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Location"))
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Location"))
 		FVector  m_location;
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Rotation"))
 		FRotator m_rotation;
 
-		UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Fingers"))
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Fingers"))
 		TArray<FDTrackFinger> m_fingers;
 };
 

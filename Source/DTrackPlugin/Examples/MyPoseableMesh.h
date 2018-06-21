@@ -9,6 +9,7 @@
 #include "DTrackInterface.h"
 #include "IKSolver.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
 
 #include "Animation/Skeleton.h"
 #include "ReferenceSkeleton.h"
@@ -16,6 +17,31 @@
 
 
 #include "MyPoseableMesh.generated.h"
+
+
+USTRUCT(BlueprintType)
+struct FBoneNameToBoneRotation
+{
+	GENERATED_BODY()
+
+public:
+	FBoneNameToBoneRotation() : boneID(0), boneName(FName("")), boneRotation(FQuat()), boneRotator(FRotator()) {}
+	FBoneNameToBoneRotation(int32 id, FName bN, FQuat bQ, FRotator bR) : boneID(id), boneName(bN), boneRotation(bQ), boneRotator(bR) {}
+	  
+public: 
+	UPROPERTY(BlueprintReadOnly, Category = "A DTrack")
+	int32 boneID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "A DTrack")
+	FName boneName;
+
+	UPROPERTY(BlueprintReadWrite, Category = "A DTrack")
+	FQuat boneRotation;
+	 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "A DTrack")
+	FRotator boneRotator;
+};
+
 
 /**
  *
@@ -30,17 +56,20 @@ UCLASS(
 ) 
 class DTRACKPLUGIN_API AMyPoseableMesh
 	:
-		public AActor,	
+		public APawn,	
 		public IDTrackInterface			// because we want the data from DTrack controlling the mesh
 { 
 	GENERATED_BODY()
 
-public:
+public: 
 	AMyPoseableMesh();
 public:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
-	UPROPERTY(VisibleAnywhere, Category = "DTrack")
+	UPROPERTY(VisibleAnywhere, Category = "DTrack Skeleton")
 	UPoseableMeshComponent* m_pPoseableMeshComponent;	// because we want a poseable mesh to be controlled by DTrack via C++
+														/** The m_pCapsuleComponent being used for movement collision (by CharacterMovement). Always treated as being vertically aligned in simple collision check functions. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "DTrack Skeleton")
+	UCapsuleComponent* m_pCapsuleComponent;
 
 public:
 	/*************************/
@@ -64,13 +93,15 @@ public:
 	virtual void PreInitializeComponents() override;	// AActor::PreInitializeComponents - Called before InitializeComponent is called on the actor's components
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
+	/// Called when this Actor hits (or is hit by) something solid. This could happen due to things like Character movement, using Set Location with 'sweep' enabled, or physics simulation.
+	//virtual FActorHitSignature OnActorHit() override;
 
 	// ::: following are only for components :::
 	//virtual void InitializeComponent() override;	// Initializes the component.  Occurs at level startup. This is before BeginPlay (Actor or Component).  
 	//virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 
-public:
+public: 
 	/*********************************/
 	/** overrides of DTrackInterface */
 	/*********************************/
@@ -95,22 +126,24 @@ public:
 	 
 
 public:
-	IKSolver * m_ik_solver;	// experimental ik-solver (use at your own risk)
+	//IKSolver * m_ik_solver;	// experimental ik-solver (use at your own risk)
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack")
-	TMap<FName, int32> m_BoneToDTrackIDMap;
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	TMap<FName, int32> m_BoneToDTrackIDMap;*/
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	FSkeletalHand m_HandR;*/
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	TArray<FBoneNameToBoneRotation> m_SkeletonRotations;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DTrack Skeleton")
+	TArray<FBoneNameToBoneRotation> m_RawSkeletonRotations;	// default values in UE4-TPose
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	TMap<int32, FName> m_DTrackIDToBoneMap;
+
+	// cache the start pos of the player
 	FVector m_PlayerStartPos;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack")
-	FQuat m_Rot;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack")
-	FTransform m_TransformBone30;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack")
-	TArray<FTransform> m_pRawRefBonePose;
 };
