@@ -14,6 +14,7 @@
 #include "Animation/Skeleton.h"
 #include "ReferenceSkeleton.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Camera/CameraComponent.h"
 
 
 #include "MyPoseableMesh.generated.h"
@@ -65,6 +66,10 @@ public:
 	AMyPoseableMesh();
 public:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	/** First person camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* m_pCameraComponent;
+
 	UPROPERTY(VisibleAnywhere, Category = "DTrack Skeleton")
 	UPoseableMeshComponent* m_pPoseableMeshComponent;	// because we want a poseable mesh to be controlled by DTrack via C++
 														/** The m_pCapsuleComponent being used for movement collision (by CharacterMovement). Always treated as being vertically aligned in simple collision check functions. */
@@ -146,4 +151,10 @@ public:
 
 	// cache the start pos of the player
 	FVector m_PlayerStartPos;
-};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	FVector m_DefaultHandLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	FRotator m_rotatorPatchForHand = FRotator(0.0, -90.0, -90.0);  // for that skeleton hand <-90,0,-90> is suitable... (XYZ)
+};     

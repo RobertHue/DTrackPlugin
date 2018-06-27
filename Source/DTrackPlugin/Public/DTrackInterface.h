@@ -168,11 +168,20 @@ struct FDTrackFinger
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Outer Phalanx Length"))
 	float    m_outer_phalanx_length;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Inner Middle Phalanx Angle"))
-	float    m_inner_middle_phalanx_angle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Middle Outer Phalanx Angle"))
-	float    m_middle_outer_phalanx_angle;
+	// following angles are in degrees   /// tbh has 2DoF (around local fingertracking Z (Yaw) and Y (Pitch) axis)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Hand inner Phalanx Angle (alpha-DEG). The Angle around X (Pitch)."))
+	float    m_hand_inner_phalanx_angle_pitch;	/// angle in degrees
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Hand inner Phalanx Angle (alpha-DEG). The Angle around Z (Yaw)."))
+	float    m_hand_inner_phalanx_angle_yaw;	/// angle in degrees
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Hand inner Phalanx Angle (alpha-DEG). Should be close to 0, because this bone just has 2 DoF (Pitch and Yaw)."))
+	float    m_hand_inner_phalanx_angle_roll;	/// angle in degrees (should be 0, because a finger cannot do rolls anatomically)
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Inner Middle Phalanx Angle (beta-DEG)"))
+	float    m_inner_middle_phalanx_angle;	/// angle in degrees
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Middle Outer Phalanx Angle (gamma-DEG)"))
+	float    m_middle_outer_phalanx_angle;	/// angle in degrees
 };
 
 
