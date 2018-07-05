@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DTrackInterface.h"
 
 // #define _USE_MATH_DEFINES
 #include <cmath>
@@ -10,6 +9,28 @@
 #endif
 constexpr double DEG_TO_RAD = (double)(M_PI) / 180.0f;
 constexpr double RAD_TO_DEG = (double)(180.0f) / M_PI;
+
+/**
+* This represents different room calibration default settings as
+* set in the DTrack system. Choose the one that corresponds with your setup
+* and transformations will be translated into Unreal's standard coordinate
+* system
+*
+* @note: CST stands for coordinate-system
+*/
+UENUM(BlueprintType, Category = DTrack)
+enum class EDTrackCoordinateSystemType : uint8
+{
+	/// The normal setting:		Right handed (RHS) | Z is up | Y is front | X is side (default)
+	CST_Normal			UMETA(DisplayName = "DTrack Normal (Z is up | Y is front | X is side)"),
+
+	/// The unreal adapted setting:		Right handed (RHS) | Z is up | X as front | -Y is side
+	CST_Unreal_Adapted	UMETA(DisplayName = "DTrack Unreal Adapted (Z is up | X as front | -Y is side)")
+
+	// TODO: commented CST_Powerwall, because it needs some testing...
+	///// Powerwall default setting with Y as up 
+	//CST_Powerwall		UMETA(DisplayName = "DTrack Powerwall"),
+};
 
 /*
  * @class: 

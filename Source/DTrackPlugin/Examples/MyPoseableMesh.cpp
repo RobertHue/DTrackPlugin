@@ -38,22 +38,23 @@ AMyPoseableMesh::AMyPoseableMesh()
 	/////////////////////////////
 	// Create a CameraComponent	
 	/////////////////////////////
-	m_pCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	m_pCameraComponent->RelativeLocation = FVector(0, 0, 64.f); // Position the camera
+	m_pCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("m_pCameraComponent"));
 	m_pCameraComponent->bUsePawnControlRotation = true;
+	m_pCameraComponent->RelativeLocation = FVector(0, 0, 64.f); // Rel. Position of the camera
 
 	//////////////////////
-	// Poseable Mesh
+	// Poseable Mesh (right hand)
 	//////////////////////
-	m_pPoseableMeshComponent = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("UPoseableMeshComponent"));
+	m_pPoseableMeshComponent = CreateDefaultSubobject<UPoseableMeshComponent>(TEXT("m_pPoseableMeshComponent"));
 	m_pPoseableMeshComponent->bWantsInitializeComponent = true;
-	m_pPoseableMeshComponent->RelativeLocation = FVector(0, 64.f, 64.f); // Position the hand
-	m_pPoseableMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//m_pPoseableMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//m_pPoseableMeshComponent->RelativeLocation = FVector(30.f, 20.f, 0.f); // Rel. Position of the camera // is not being used if the BP using the CPP class is changing the rel. loc
+
 
 	//////////////////////
 	// DTrack Component
 	//////////////////////
-	m_dtrack_component = CreateDefaultSubobject<UDTrackComponent>(TEXT("DTrackComponent"));
+	m_dtrack_component = CreateDefaultSubobject<UDTrackComponent>(TEXT("m_dtrack_component"));
 	if (!m_dtrack_component) {
 		UE_LOG(LogTemp, Warning, TEXT("DTrack Component could not be created"));  // m_pPoseableMeshComponent shouldn't happen but you may treat it.
 	}
@@ -81,9 +82,11 @@ AMyPoseableMesh::AMyPoseableMesh()
 	// however from constructor or when not registered it is preferable to use SetupAttachment.
 
 	///////////////////////////////////////
-	RootComponent = m_pCameraComponent;//  m_pCapsuleComponent;
-	m_pPoseableMeshComponent->SetupAttachment(RootComponent);	// only for USceneComponents
-	m_pCapsuleComponent->SetupAttachment(RootComponent);
+	// SetupAttachment only for USceneComponents (DTrack-Component is not one of them...)
+	RootComponent = m_pCapsuleComponent;	// RootComponent is the Collision Primitive (which defines the transform (location, rotation, scale) of this Actor)
+	m_pCameraComponent->SetupAttachment(RootComponent);
+	m_pPoseableMeshComponent->SetupAttachment(RootComponent);
+
 	UE_LOG(LogSkeletalMesh, Warning, TEXT("Constructor end: AMyPoseableMesh"));
 } 
 
@@ -91,53 +94,7 @@ void AMyPoseableMesh::PostLoad()
 {
 	UE_LOG(LogSkeletalMesh, Warning, TEXT("AMyPoseableMesh::PostLoad()"));
 	Super::PostLoad();
-	// here the SkinnedMeshComp has a SkeletalMesh ("SK_Mannequin")
-
-	//if (BoneQuats.Num() == 0) {
-
-	//	const TArray<FMeshBoneInfo>& rawRefBoneInfos = m_pPoseableMeshComponent->SkeletalMesh->RefSkeleton.GetRawRefBoneInfo();
-	//	const TArray<FTransform>& rawRefBonePoses = m_pPoseableMeshComponent->SkeletalMesh->RefSkeleton.GetRawRefBonePose();
-
-	//	for (int i = 0; i < rawRefBonePoses.Num(); ++i) {
-	//		BoneQuats.Add(rawRefBoneInfos[i].Name, rawRefBonePoses[i].GetRotation()); 
-	//		//m_BoneNameToPoseMap.Add(FBoneNameToTransform{ rawRefBoneInfos[i].Name, rawRefBonePoses[i] });
-	//	} 
-	//}
-
-	//if (m_BoneToDTrackIDMap.Num() <= 0) {	// only assign skeleton bone names if map is empty
-	//	TArray <FName> BoneNames;
-	//	m_pPoseableMeshComponent->GetBoneNames(BoneNames);
-	//	for (int i = 0; i < BoneNames.Num(); ++i) {
-	//		FName NameOfBone = BoneNames[i];
-	//		m_BoneToDTrackIDMap.Add(NameOfBone, i);
-	//	}
-	//}
-
-
-	// only assign once AND only assign if PoseableMeshComp has Bones...
-	//if (m_hand_r_bones.Num() <= 0 && m_pPoseableMeshComponent->GetNumBones() > 0) {
-	//	for (int32 id = 29; id <= 44; ++id) {
-	//		FName boneName = m_pPoseableMeshComponent->GetBoneName(id);
-	//		FBoneNameToBoneRotation test(id,
-	//			boneName,
-	//			m_pPoseableMeshComponent->GetBoneQuaternion(boneName, EBoneSpaces::WorldSpace)
-	//		);
-	//		m_hand_r_bones.Add(FBoneNameToBoneRotation(id,
-	//			boneName, 
-	//			m_pPoseableMeshComponent->GetBoneQuaternion(boneName, EBoneSpaces::WorldSpace)
-	//		));
-	//	}
-	//}
-
-	/*if (m_hand_l_bones.Num() <= 0) {
-		for (int32 i = 8; i <= 23; ++i) {
-			int32 id = i;
-			m_hand_l_bones.Add(FBoneNameToBoneRotation(id,
-				m_pPoseableMeshComponent->GetBoneName(id),
-				m_pPoseableMeshComponent->GetBoneQuaternion(m_pPoseableMeshComponent->GetBoneName(id), EBoneSpaces::WorldSpace)
-			)); 
-		}
-	}*/
+	// here the SkinnedMeshComp has a SkeletalMesh ("SK_Mannequin") but without preset rotations
 }
 
 // If you want object to react on invidual property chages in editor use PostEditChangeProperty
@@ -159,18 +116,8 @@ void AMyPoseableMesh::PostEditChangeChainProperty(struct FPropertyChangedChainEv
 	// only change what has been changed and dont adapt everything...
 	FName PropertyName = e.GetPropertyName();	// is m_pRawRefBonePoseMap...
 	UProperty* up = e.Property;	// the actual property that changed... 
-	//int32 index = e.GetArrayIndex(TEXT("m_hand_data_r"));
-	//if (PropertyName == GET_MEMBER_NAME_CHECKED(AMyPoseableMesh, BoneQuats)) {
 
-	//	// use GetArrayIndex() on the FPropertyChangedChainEvent parameter to get the element index whose property is being changed
-	//	int32 index = e.GetArrayIndex(TEXT("BoneQuats"));
-
-	//	if (index >= 0 && index <= (BoneQuats.Num() - 1)) {
-	//		FName boneName = m_pPoseableMeshComponent->GetBoneName(index); 
-	//		m_pPoseableMeshComponent->SetBoneRotationByName(boneName, BoneQuats[boneName].Rotator(), EBoneSpaces::WorldSpace);
-	//		// m_pPoseableMeshComponent->SetBoneTransformByName(boneName, m_pRawRefBonePoseMap[index], EBoneSpaces::WorldSpace);
-	//	}
-	//}
+	//	use GetArrayIndex() on the FPropertyChangedChainEvent parameter to get the element index whose property is being changed
 	int32 index = e.GetArrayIndex(TEXT("m_SkeletonRotations"));
 	if (index >= 0 && index < m_pPoseableMeshComponent->GetNumBones()) {
 		FName boneName = m_pPoseableMeshComponent->GetBoneName(index); 
@@ -217,6 +164,8 @@ void AMyPoseableMesh::OnConstruction(const FTransform & Transform)
 	//UE_LOG(LogSkeletalMesh, Warning, TEXT("AMyPoseableMesh::OnConstruction()"));
 	Super::OnConstruction(Transform);
 
+	// to avoid null-pointer exceptions:
+	if (m_pPoseableMeshComponent == nullptr) { return; }
 
 	// only assign once ((m_SkeletonRotations.Num() <= 0)) &&  AND only assign if PoseableMeshComp has Bones...
 	if (m_SkeletonRotations.Num() <= 0 && m_pPoseableMeshComponent->GetNumBones() > 0) {
@@ -250,13 +199,16 @@ void AMyPoseableMesh::BeginPlay()
 	UE_LOG(LogSkeletalMesh, Warning, TEXT("AMyPoseableMesh::BeginPlay()"));
 	Super::BeginPlay();
 
-	AActor* actorThatOwnsm_pPoseableMeshComponentComponent = m_pPoseableMeshComponent->GetOwner();
-	if (actorThatOwnsm_pPoseableMeshComponentComponent) {
-		FString name = actorThatOwnsm_pPoseableMeshComponentComponent->GetName();
-		UE_LOG(LogTemp, Warning, TEXT("Name of Actor that owns m_pPoseableMeshComponent component(UMyPoseableMeshComp) : %s"), *name);
+	if (m_pPoseableMeshComponent != nullptr) {
+		AActor* actorThatOwnsm_pPoseableMeshComponentComponent = m_pPoseableMeshComponent->GetOwner();
+		if (actorThatOwnsm_pPoseableMeshComponentComponent) {
+			FString name = actorThatOwnsm_pPoseableMeshComponentComponent->GetName();
+			UE_LOG(LogTemp, Warning, TEXT("Name of Actor that owns m_pPoseableMeshComponent component(UMyPoseableMeshComp) : %s"), *name);
+		}
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////// IK-Solver Tests
 	// setup the segments
 	//int def_DOF = 1;
 
@@ -308,122 +260,6 @@ void AMyPoseableMesh::OnBodyData_Implementation(const int32 BodyID, const FVecto
 		//m_pCameraComponent->RelativeRotation = Rotation;
 		//this->SetActorRotation(FQuat(Rotation));
 	}
-	/*FName boneName = m_BoneToDTrackIDMap[BodyID];
-	m_pPoseableMeshComponent->SetBoneRotationByName(boneName, Rotation, EBoneSpaces::WorldSpace);*/	
-	 
-	/*
-	if (BodyID == 1) {
-		this->SetActorLocation(
-			Position + m_PlayerStartPos, 
-			true,			// bSweep - stop if the target is collided with something
-			nullptr, 
-			ETeleportType::None		// collisions along the way will occur
-		);
-		// only set location everything else is unnatural
-	}
-
-
-
-	//const FName* pBoneName = m_BoneToDTrackIDMap.FindKey(BodyID);	// takes O(N)
-	const FName& rBoneName = m_DTrackIDToBoneMap[BodyID];	// takes O(1)
-	m_pPoseableMeshComponent->SetBoneRotationByName(
-		rBoneName,
-		FRotator(Rotation.Pitch, Rotation.Yaw, Rotation.Roll), 
-		EBoneSpaces::WorldSpace
-	);*/
-	 
-	//if (BodyID == 2) {
-	//	const FRotator defaultPose2 = Rotation;
-	//	FName boneName("upperarm_r");
-	//	const TArray<FTransform>& boneTransforms = m_pPoseableMeshComponent->SkeletalMesh->RefSkeleton.GetRawRefBonePose();
-	//	int32 boneIndex = m_pPoseableMeshComponent->GetBoneIndex(boneName);
-	//	FRotator rawRotation = boneTransforms[boneIndex].Rotator();
-	//	m_pPoseableMeshComponent->SetBoneRotationByName(boneName, (Rotation - defaultPose2) + rawRotation, EBoneSpaces::WorldSpace);
-	//}
-	//if (BodyID == 1) { 
-	//	const FRotator defaultPose1 = Rotation;
-	//	FName boneName("lowerarm_r");
-	//	const TArray<FTransform>& boneTransforms = m_pPoseableMeshComponent->SkeletalMesh->RefSkeleton.GetRawRefBonePose();
-	//	int32 boneIndex = m_pPoseableMeshComponent->GetBoneIndex(boneName);
-	//	FRotator rawRotation = boneTransforms[boneIndex].Rotator();
-	//	m_pPoseableMeshComponent->SetBoneRotationByName(boneName, (Rotation - defaultPose1) + rawRotation, EBoneSpaces::WorldSpace);
-	//}
-
-	//if (BodyID == 2) { 
-	//	//m_pPoseableMeshComponent->SetBoneRotationByName("hand_r", Rotation, EBoneSpaces::WorldSpace);
-	//	//m_pPoseableMeshComponent->SetBoneLocationByName("hand_r", Position + m_cachedHandRLocation, EBoneSpaces::WorldSpace);
-	//}
-
-	//if (BodyID == 1) {
-
-	//	IKSegment *pSeg = nullptr;
-	//	 
-	//	if(m_ik_solver == nullptr) { UE_LOG(LogTemp, Warning, TEXT("m_ik_solver is nullptr")); }
-	//	else {
-	//		FVector handBonePos = m_pPoseableMeshComponent->GetBoneLocation("hand_r", EBoneSpaces::WorldSpace);
-	//		FVector newPos = Position + handBonePos;
-	//		UE_LOG(LogTemp, Warning, TEXT("Position : %s"), *(Position).ToString());
-	//		UE_LOG(LogTemp, Warning, TEXT("TargetPos : newPos : %s"), *(newPos).ToString());
-	//		m_ik_solver->Solve(newPos);	// newPos as TargetPos of Kinematic Chain
-	//		pSeg = m_ik_solver->GetRootSegment();
-	//		pSeg = pSeg->Child();	// advance pSeg pointer
-	//	} 
-
-	//	if (pSeg==nullptr) { UE_LOG(LogTemp, Warning, TEXT("pSeg is nullptr")); }
-	//	else {
-	//		UE_LOG(LogTemp, Warning, TEXT("pSeg : %f"), pSeg->GetTheta());
-	//	} 
-
-
-	//	if (pSeg == nullptr) { UE_LOG(LogTemp, Warning, TEXT("pSeg->Child() is nullptr")); }
-	//	else {
-	//		double thetaRad1 = pSeg->GetTheta(); 
-	//		double thetaDeg1 = thetaRad1 * RAD_TO_DEG;
-	//		UE_LOG(LogTemp, Warning, TEXT("r1 : thetaDeg1 : %f"), thetaDeg1);
-	//		FQuat q1 = FQuat(FRotator(0, 0, thetaDeg1)) * m_pPoseableMeshComponent->GetBoneQuaternion(TEXT("hand_r"), EBoneSpaces::WorldSpace);
-	//		m_pPoseableMeshComponent->SetBoneRotationByName("index_01_r", q1.Rotator(), EBoneSpaces::WorldSpace);
-	//		pSeg = pSeg->Child();	// advance pSeg pointer
-	//	} 
-
-	//	if (pSeg == nullptr) { UE_LOG(LogTemp, Warning, TEXT("pSeg->Child()->Child() is nullptr")); }
-	//	else {
-	//		double thetaRad2 = pSeg->GetTheta();
-	//		double thetaDeg2 = thetaRad2 * RAD_TO_DEG;
-	//		UE_LOG(LogTemp, Warning, TEXT("r2 : thetaDeg2 : %f"), thetaDeg2);
-	//		FQuat q2 =  FQuat(FRotator(0, 0, thetaDeg2)) * m_pPoseableMeshComponent->GetBoneQuaternion(TEXT("index_01_r"), EBoneSpaces::WorldSpace);
-	//		m_pPoseableMeshComponent->SetBoneRotationByName("index_02_r", q2.Rotator(), EBoneSpaces::WorldSpace);
-	//		pSeg = pSeg->Child();	// advance pSeg pointer
-	//	}
-
-	//	if (pSeg == nullptr) { UE_LOG(LogTemp, Warning, TEXT("pSeg->Child()->Child()->Child() is nullptr")); }
-	//	else {
-	//		double thetaRad3 = pSeg->GetTheta();
-	//		double thetaDeg3 = thetaRad3 * RAD_TO_DEG;
-	//		UE_LOG(LogTemp, Warning, TEXT("r3 : thetaDeg3 : %f"), thetaDeg3);
-	//		FQuat q3 = FQuat(FRotator(0, 0, thetaDeg3)) * m_pPoseableMeshComponent->GetBoneQuaternion(TEXT("index_02_r"), EBoneSpaces::WorldSpace);
-	//		m_pPoseableMeshComponent->SetBoneRotationByName("index_03_r", q3.Rotator(), EBoneSpaces::WorldSpace);
-	//		pSeg = pSeg->Child();	// advance pSeg pointer 
-	//	}
-	//}
-
-	/*
-	if (BodyID == 1) {        // The ID of the tracked body. There can be many, depending on your setup.
-	FVector tmp = Position;
-	tmp.X = tmp.X - 200;
-	tmp.Z = tmp.Z + 200;
-	// well, do whatever you like with the data. Much flexibility here really.
-	//SetActorLocation(tmp, false, nullptr, ETeleportType::None);
-	//SetActorRotation(Rotation.Quaternion(), ETeleportType::None);
-
-	UE_LOG(LogTemp, Warning, TEXT("DATA OF BODY-ID"));
-	UE_LOG(LogTemp, Warning, TEXT("Roll : %f"), Rotation.Roll);
-	UE_LOG(LogTemp, Warning, TEXT("Pitch : %f"), Rotation.Pitch);
-	UE_LOG(LogTemp, Warning, TEXT("Yaw : %f"), Rotation.Yaw);
-
-	// m_pPoseableMeshComponent->SetBoneRotationByName("upperarm_l", (defaultUpperArmLRot + Rotation).Quaternion().Rotator(), EBoneSpaces::WorldSpace);
-	m_pPoseableMeshComponent->SetBoneRotationByName("lowerarm_l", (Rotation).Quaternion().Rotator(), EBoneSpaces::WorldSpace);
-	}
-	*/
 }
 
 void AMyPoseableMesh::OnFlystickData_Implementation(const int32 FlystickID, const FVector & Position, const FRotator & Rotation)
@@ -453,13 +289,11 @@ void AMyPoseableMesh::OnHandTracking_Implementation(const int32 HandID, const bo
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnHandTracking_Implementation"));
 
-
 	if (Right == true) {
 		FName boneNameHand = "hand_r";
 		FQuat NewRotHand = FQuat(Rotation) * FQuat(m_rotatorPatchForHand);
 		m_pPoseableMeshComponent->SetBoneLocationByName(boneNameHand, Translation + m_DefaultHandLocation + m_PlayerStartPos, EBoneSpaces::WorldSpace);
-		m_pPoseableMeshComponent->SetBoneRotationByName(boneNameHand, (NewRotHand).Rotator(), EBoneSpaces::WorldSpace);
-		//UE_LOG(LogTemp, Warning, TEXT("Hand-FINGER_DEG : %s"), *Rotation.ToString()); 
+		m_pPoseableMeshComponent->SetBoneRotationByName(boneNameHand, (NewRotHand).Rotator(), EBoneSpaces::WorldSpace); 
 
 		int32 idxOffset;
 		for (int i=0; i<5; ++i)
@@ -477,78 +311,112 @@ void AMyPoseableMesh::OnHandTracking_Implementation(const int32 HandID, const bo
 			float indexFinger02Angle = Fingers[i].m_inner_middle_phalanx_angle;
 			float indexFinger03Angle = Fingers[i].m_middle_outer_phalanx_angle;
 			UE_LOG(LogTemp, Warning, TEXT("FINGER_DEG : hand: %s - fingerTip: %s - a:%f b:%f c:%f"), *Rotation.ToString(), *(Fingers[1].m_rotation).ToString(), indexFinger01Angle, indexFinger02Angle, indexFinger03Angle);
-
+			 
 			//int32 index = 30; // do not do it via indices and rather use the name itself!
 			FName handBoneRName = "hand_r";
 			int32 idxHandBone = m_pPoseableMeshComponent->GetBoneIndex(handBoneRName);
 			FName indexBoneRName01 = m_pPoseableMeshComponent->GetBoneName(idxHandBone + idxOffset + 0);
 			FName indexBoneRName02 = m_pPoseableMeshComponent->GetBoneName(idxHandBone + idxOffset + 1);
 			FName indexBoneRName03 = m_pPoseableMeshComponent->GetBoneName(idxHandBone + idxOffset + 2);
-			/*FName indexBoneRName01 = "index_01_r";  
-			FName indexBoneRName02 = "index_02_r"; 
-			FName indexBoneRName03 = "index_03_r";*/
-			//FName boneNameParent = m_pPoseableMeshComponent->GetBoneName(index-1);
-			//FName boneName = m_pPoseableMeshComponent->GetBoneName(index);
+
+			FQuat ParentRot;
 
 
-			FQuat RawRot;
+			// test code for thumb!!!
+			if (i == 0) {
+				const EBoneSpaces::Type SpaceType2 = EBoneSpaces::WorldSpace;
 
-			// Possiblities:		Roll (X)		Pitch (Y)		Yaw (Z)
-			//FName propName = "Yaw";		// UE-specific:		is rotation around the vector pointing to the side of the finger
+				//ParentRot = m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType2); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName01)].boneRotation;
+				//FVector localBoneAxis0 = ParentRot.GetAxisY();
+				//float angle0 = indexFinger00Angle * DEG_TO_RAD;
+				//FQuat newRot0(localBoneAxis0, angle0);
+				// the following line is different to all others: reason: the thumb needs a special coordinate system which cannot be derived from the rotation of the back of the hand. So get the axis rotation from the RawSkeleton here!
 
-			////////////////////////////////////////////////////////////
-			// bring DTrack-Data in suitable format: (postprocessing)
+				ParentRot = m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType2); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName01)].boneRotation;
+				FQuat AddRot = FQuat(FVector::ForwardVector, -45.f * DEG_TO_RAD) * m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(handBoneRName)].boneRotation * m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName01)].boneRotation;
+				//FQuat(FVector::UpVector, -45.f * DEG_TO_RAD) * FQuat(FVector::ForwardVector, -90.f * DEG_TO_RAD); // 
+				FRotator AddRotator = AddRot.Rotator(); 
+				m_ValueForBPRotation = (ParentRot * AddRot).Rotator();
+				m_ValueForBPLocation = m_pPoseableMeshComponent->GetBoneLocationByName(handBoneRName, SpaceType2);
+				/////////////////////////////////////////////////////
+				FVector localBoneAxis0 = (ParentRot * AddRot).GetAxisZ();
+				float angle0 = indexFinger00Angle * DEG_TO_RAD;
+				FQuat newRot0(localBoneAxis0, angle0);
+				FVector localBoneAxis1 = (ParentRot * AddRot).GetAxisY();
+				float angle1 = indexFinger01Angle * DEG_TO_RAD; 
+				FQuat newRot1(localBoneAxis1, angle1); 
+				m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName01, m_ValueForBPRotation, SpaceType2);
 
+				ParentRot = m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName01, SpaceType2); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName02)].boneRotation;
+				FVector localBoneAxis2 = ParentRot.GetAxisZ();
+				float angle2 = indexFinger02Angle * DEG_TO_RAD;
+				FQuat newRot2(localBoneAxis2, angle2);
+				m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName02, (newRot2 * m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName01, SpaceType2)).Rotator(), SpaceType2);
 
+				ParentRot = m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName02, SpaceType2); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName03)].boneRotation;
+				FVector localBoneAxis3 = ParentRot.GetAxisZ();
+				float angle3 = indexFinger03Angle * DEG_TO_RAD;
+				FQuat newRot3(localBoneAxis3, angle3);
+				m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName03, (newRot3 * m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName02, SpaceType2)).Rotator(), SpaceType2);
 
-			//if (propName == "Roll") {
-			//	localBoneAxis = RawRot.GetAxisX();
-			//	//angle = m_SkeletonRotations[index].boneRotator.Roll * DEG_TO_RAD;
-			//}
-			//else if (propName == "Pitch") {
-			//	localBoneAxis = RawRot.GetAxisY();
-			//	//angle = m_SkeletonRotations[index].boneRotator.Pitch * DEG_TO_RAD;
-			//}
-			//else if (propName == "Yaw") {
-			//	localBoneAxis = RawRot.GetAxisZ();
-			//	//angle = m_SkeletonRotations[index].boneRotator.Yaw * DEG_TO_RAD;
-			//}
-			//else {
-			//	// do nothing   
-			//	return;
-			//}
+				// ease the use of the struct... demo: thumb
+				//FRotator thumbTest = FRotator(
+				//	-Fingers[i].m_hand_inner_phalanx_angle_yaw,
+				//	Fingers[i].m_hand_inner_phalanx_angle_pitch,
+				//	0
+				//);
+				//UE_LOG(DTrackPollThreadLog, Display, TEXT("THUMB: thumbTest : %s"), *(thumbTest.ToString()));
+
+				//m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName01, (m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType2) * thumbTest.Quaternion()).Rotator(), SpaceType2);
+
+				continue;
+			}
 
 			///////////////////////////////////
-			// assign to UE4-Skeleton:
+			// assign to UE4-Skeleton: (in WorldSpace) - dunno why UE4 removed bone local space... But that cant be easily calculated by qChild * qParent
 			const EBoneSpaces::Type SpaceType = EBoneSpaces::WorldSpace;
 
-			RawRot = m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName02, SpaceType); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName03)].boneRotation;
-			FVector localBoneAxis3 = RawRot.GetAxisZ();
-			float angle3 = indexFinger03Angle * DEG_TO_RAD;
-			FQuat newRot3(localBoneAxis3, angle3);
-			m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName03, (newRot3 * m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName02, SpaceType)).Rotator(), SpaceType);
+			/// newRot3 = Finger Tip					- PitchAngle
+			/// newRot2 = Finger Middle Phalanx			- PitchAngle
+			/// newRot1 = Finger Inner Phalanx (Base)	- PitchAngle
+			/// newRot0 = Finger Inner Phalanx (Base)	- YawAngle
 
-			RawRot = m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName01, SpaceType); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName02)].boneRotation;
-			FVector localBoneAxis2 = RawRot.GetAxisZ();
+			ParentRot = m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName01)].boneRotation;
+			FVector localBoneAxis0 = ParentRot.GetAxisY();
+			float angle0 = indexFinger00Angle * DEG_TO_RAD;
+			FQuat newRot0(localBoneAxis0, angle0);
+			ParentRot = m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName01)].boneRotation;
+			FVector localBoneAxis1 = ParentRot.GetAxisZ();
+			float angle1 = indexFinger01Angle * DEG_TO_RAD;
+			FQuat newRot1(localBoneAxis1, angle1);
+			m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName01, ((newRot1 * newRot0) * m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType)).Rotator(), SpaceType);
+
+			ParentRot = m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName01, SpaceType); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName02)].boneRotation;
+			FVector localBoneAxis2 = ParentRot.GetAxisZ();
 			float angle2 = indexFinger02Angle * DEG_TO_RAD;
 			FQuat newRot2(localBoneAxis2, angle2);
 			m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName02, (newRot2 * m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName01, SpaceType)).Rotator(), SpaceType);
 
-			RawRot = m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName01)].boneRotation;
-			FVector localBoneAxis0 = RawRot.GetAxisY();
-			float angle0 = indexFinger00Angle * DEG_TO_RAD;
-			FQuat newRot0(localBoneAxis0, angle0);
+			ParentRot = m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName02, SpaceType); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName03)].boneRotation;
+			FVector localBoneAxis3 = ParentRot.GetAxisZ();
+			float angle3 = indexFinger03Angle * DEG_TO_RAD; 
+			FQuat newRot3(localBoneAxis3, angle3);
+			m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName03, (newRot3 * m_pPoseableMeshComponent->GetBoneQuaternion(indexBoneRName02, SpaceType)).Rotator(), SpaceType);
 
-			RawRot = m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType); // m_RawSkeletonRotations[m_pPoseableMeshComponent->GetBoneIndex(indexBoneRName01)].boneRotation;
-			FVector localBoneAxis1 = RawRot.GetAxisZ();
-			float angle1 = indexFinger01Angle * DEG_TO_RAD;
-			FQuat newRot1(localBoneAxis1, angle1);
-			m_pPoseableMeshComponent->SetBoneRotationByName(indexBoneRName01, ((newRot1) * m_pPoseableMeshComponent->GetBoneQuaternion(handBoneRName, SpaceType)).Rotator(), SpaceType);
+			//TODO schauen dass das geht:
+			//FQuat vTest = m_pPoseableMeshComponent->GetBoneQuaternion("hand_r", SpaceType);
+			//FVector offsetToTip = vTest.RotateVector(-FVector(Fingers[i].m_location.Z, Fingers[i].m_location.Y, Fingers[i].m_location.X));
+			//FVector coordPos = m_pPoseableMeshComponent->GetBoneLocationByName("hand_r", SpaceType); // -m_pPoseableMeshComponent->GetBoneLocationByName("hand_r", SpaceType);
 
+			//m_pPoseableMeshComponent->SetBoneLocationByName(
+			//	indexBoneRName03, 
+			//	Fingers[i].m_location - ( m_DefaultHandLocation + m_PlayerStartPos), // + m_pPoseableMeshComponent->GetBoneLocationByName("hand_r", SpaceType),
+			//	SpaceType
+			//);
 
+			 
 			//UE_LOG(LogTemp, Warning, TEXT("FINGER_ANGLE_DEG : %f"), indexFinger01Angle);
 		}
-
 	}  
 }
 

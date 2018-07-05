@@ -341,38 +341,35 @@ void FDTrackPollThread::handle_hands() {
 				}
 				///////////////////////////////////////////////////////////////////////////////////////////
 				// unused data:		(also not relevant for the UE4-Skeleton)
-				finger.m_location = m_coord_converter.from_dtrack_location(hand->finger[j].loc);
+				finger.m_relLocation = m_coord_converter.from_dtrack_location(hand->finger[j].loc); // local backOfHand relative location
+				finger.m_location = finger.m_relLocation + translation;	// global room location
 				finger.m_tip_radius = hand->finger[j].radiustip;	// the radius of the finger tip to identify its position and orientation
 				finger.m_inner_phalanx_length  = hand->finger[j].lengthphalanx[2];
 				finger.m_middle_phalanx_length = hand->finger[j].lengthphalanx[1];
 				finger.m_outer_phalanx_length  = hand->finger[j].lengthphalanx[0];
 				///////////////////////////////////////////////////////////////////////////////////////////
-
-				// due to the finger-rotation being local (tip) => do not convert to UE4
-				FMatrix r; 
-				r.M[0][0] = hand->finger[j].rot[0 + 0]; r.M[0][1] = hand->finger[j].rot[0 + 3]; r.M[0][2] = hand->finger[j].rot[0 + 6]; r.M[0][3] = 0.0; // x part
-				r.M[1][0] = hand->finger[j].rot[1 + 0]; r.M[1][1] = hand->finger[j].rot[1 + 3]; r.M[1][2] = hand->finger[j].rot[1 + 6]; r.M[1][3] = 0.0; // y part
-				r.M[2][0] = hand->finger[j].rot[2 + 0]; r.M[2][1] = hand->finger[j].rot[2 + 3]; r.M[2][2] = hand->finger[j].rot[2 + 6]; r.M[2][3] = 0.0; // Z part
-				r.M[3][0] = 0.0;			 r.M[3][1] = 0.0;			  r.M[3][2] = 0.0;			   r.M[3][3] = 1.0;	// translationary part
-				finger.m_rotation = FRotator(r.GetTransposed().Rotator());// m_coord_converter.from_dtrack_rotation(hand->finger[j].rot);
-				//finger.m_rotation = m_coord_converter.from_dtrack_rotation(hand->finger[j].rot);	// with conversion
+				// here: only the phalanx angles are of importance and not the Rotations...
+				FRotator rotatorFingerTip = m_coord_converter.from_dtrack_rotation(hand->finger[j].rot);
+				finger.m_rotation = FRotator(rotatorFingerTip);
+				FQuat fingerTipOrientation(finger.m_rotation);
 
 				finger.m_middle_outer_phalanx_angle = hand->finger[j].anglephalanx[0];  // gamma
 				finger.m_inner_middle_phalanx_angle = hand->finger[j].anglephalanx[1];	// beta
 
 				// calucalte backwards (analitically, with quaternions):
-				FRotator patchRotator(0, 0, 0); 
-				FQuat fingerTipOrientation(finger.m_rotation + patchRotator); // all except roll  
-				FQuat rotationGammaQuat(FVector::RightVector, -finger.m_middle_outer_phalanx_angle * DEG_TO_RAD);
-				FQuat rotationBetaQuat(FVector::RightVector, -finger.m_inner_middle_phalanx_angle * DEG_TO_RAD);
+				//FRotator patchRotator(0, 0, 0);  //  + patchRotator 
+				//FQuat fingerTipOrientation(finger.m_rotation); // TODO: find out:  why is roll not being zero???! or staying at a value at least when finger is just using pitch
+				FQuat rotationGammaQuat(FVector::ForwardVector, -finger.m_middle_outer_phalanx_angle * DEG_TO_RAD); 
+				FQuat rotationBetaQuat(FVector::ForwardVector,  -finger.m_inner_middle_phalanx_angle * DEG_TO_RAD);
 
-				FQuat quatOuterGlobally = fingerTipOrientation * rotation.Quaternion();
-				FQuat quatInnerGlobally = quatOuterGlobally * rotationGammaQuat * rotationBetaQuat;
 				FQuat quatOuter = fingerTipOrientation;
-				FQuat quatMiddle = rotationGammaQuat * quatOuter;		// first apply rotationGammaQuat and the quatOuter
-				FQuat quatInner  = rotationBetaQuat * quatMiddle;		// first apply rotationBetaQuat  and the quatMiddle
+				FQuat quatMiddle = quatOuter  * rotationGammaQuat;		// first apply rotationGammaQuat and then quatOuter
+				FQuat quatInner  = quatMiddle * rotationBetaQuat;		// first apply rotationBetaQuat  and then quatMiddle
+				
 
 
+				//FQuat quatOuterGlobally = fingerTipOrientation * rotation.Quaternion(); 
+				//FQuat quatInnerGlobally = quatOuterGlobally * rotationGammaQuat * rotationBetaQuat;
 				////////////////////////////
 				/* FQuat
 					.Rotator():					--------->		.Euler(): reorders to	X Y Z
@@ -389,14 +386,20 @@ void FDTrackPollThread::handle_hands() {
 				float innerAnglePitch	= FGenericPlatformMath::Acos(FVector::DotProduct(quatInner.GetForwardVector().GetSafeNormal(), FVector::ForwardVector));	// X Pitch is the angle between forward vectors along the finger
 				float innerAngleYaw		= FGenericPlatformMath::Acos(FVector::DotProduct(quatInner.GetUpVector().GetSafeNormal(), FVector::UpVector));				// Z Yaw
 				float innerAngleRoll	= FGenericPlatformMath::Acos(FVector::DotProduct(quatInner.GetRightVector().GetSafeNormal(), FVector::RightVector));		// Y Roll
-				 
-				// das hier nochmal anschauen::: einfach so die Pitch-Angle zu übernehmen ist nicht richtig... Außerdem ist Roll nicht konstant (Roll ist beim Finger gar nicht moeglich).
-				finger.m_hand_inner_phalanx_angle_pitch = -quatInner.Rotator().Pitch; // (FGenericPlatformMath::Acos(FVector::DotProduct(quatInner.GetRightVector(), FVector::RightVector)) * RAD_TO_DEG);
-				finger.m_hand_inner_phalanx_angle_yaw = -quatInner.Rotator().Yaw;
-				finger.m_hand_inner_phalanx_angle_roll = quatInner.Rotator().Roll;
 
-				if(j == 1)	// == index_finger
+				// add to proper UE4-rotation part: (is needed because forward is pointing to the negative side upwards the finger bones)
+				FRotator rotatorInner = quatInner.Rotator();
+				finger.m_hand_inner_phalanx_angle_pitch = -rotatorInner.Roll - 180.f;
+				finger.m_hand_inner_phalanx_angle_yaw = rotatorInner.Yaw - 180.f;
+				finger.m_hand_inner_phalanx_angle_roll = rotatorInner.Pitch; // should be zero (unchanged), because its not possible to do a finger twist.
+				
+
+				if(j == 0)	// == index_finger
 				{
+					UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: |+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|"));
+					UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: rotatorFingerTip : %s"), *(rotatorFingerTip.ToString()));
+					UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: fingerTipOrientation : %s"), *(fingerTipOrientation.Rotator().ToString()));
+					//UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: r2 : %s"), *(r2.ToString()));
 					UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: ----------------------------------"));
 					UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: m_middle_outer_phalanx_angle : %f"), (finger.m_middle_outer_phalanx_angle));
 					UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: m_inner_middle_phalanx_angle : %f"), (finger.m_inner_middle_phalanx_angle));
@@ -426,7 +429,13 @@ void FDTrackPollThread::handle_hands() {
 					UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: finger.m_hand_inner_phalanx_angle_roll  : %f (should be close to Zero (0)"), finger.m_hand_inner_phalanx_angle_roll);
 
 				}
-				
+				if (j == 0) {
+					UE_LOG(DTrackPollThreadLog, Display, TEXT("FINGER: |+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|+|"));
+					UE_LOG(DTrackPollThreadLog, Display, TEXT("THUMB: finger.m_hand_inner_phalanx_angle_pitch : %f"), finger.m_hand_inner_phalanx_angle_pitch);
+					UE_LOG(DTrackPollThreadLog, Display, TEXT("THUMB: finger.m_hand_inner_phalanx_angle_yaw   : %f"), finger.m_hand_inner_phalanx_angle_yaw);
+					UE_LOG(DTrackPollThreadLog, Display, TEXT("THUMB: finger.m_hand_inner_phalanx_angle_roll  : %f (should be close to Zero (0)"), finger.m_hand_inner_phalanx_angle_roll);
+
+				}
 				// calucalte backwards (analitically, with vectors):  // experimental (do not use this commented code)
 				//FVector fingerTipPosition(finger.m_location);
 				//FQuat fingerTipOrientation(finger.m_rotation);
@@ -454,6 +463,7 @@ void FDTrackPollThread::handle_hands() {
 	}
 }
 
+/// TODO: still needs to be tested
 void FDTrackPollThread::handle_human_model() {
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("FDTrackPollThread::handle_human_model()"));
 	

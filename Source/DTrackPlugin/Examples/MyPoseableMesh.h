@@ -7,7 +7,6 @@
 
 #include "DTrackComponent.h"
 #include "DTrackInterface.h"
-#include "IKSolver.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Pawn.h"
 
@@ -19,7 +18,9 @@
 
 #include "MyPoseableMesh.generated.h"
 
-
+/// @struct		FBoneNameToBoneRotation:
+///				used to store a mapping between boneID/boneName and the corresponding Rotation as FQuat/FRotator
+/// @note		is not really a mapping because no map is used. It's possible to have the same boneName for another Rotation
 USTRUCT(BlueprintType)
 struct FBoneNameToBoneRotation
 {
@@ -29,13 +30,17 @@ public:
 	FBoneNameToBoneRotation() : boneID(0), boneName(FName("")), boneRotation(FQuat()), boneRotator(FRotator()) {}
 	FBoneNameToBoneRotation(int32 id, FName bN, FQuat bQ, FRotator bR) : boneID(id), boneName(bN), boneRotation(bQ), boneRotator(bR) {}
 	  
-public: 
+public:
+	/////////////////////
+	// UUID:
 	UPROPERTY(BlueprintReadOnly, Category = "A DTrack")
 	int32 boneID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "A DTrack")
 	FName boneName;
 
+	/////////////////////
+	// Rotation
 	UPROPERTY(BlueprintReadWrite, Category = "A DTrack")
 	FQuat boneRotation;
 	 
@@ -45,9 +50,9 @@ public:
 
 
 /**
- *
- * allows bone transforms to be driven by C++ (here: DTrack)
- * @note:  moved MyPoseableMeshComponent into a class deriving from AActor, because a standard component does not take over the values (always resets to default)
+ * @class	AMyPoseableMesh
+ *			allows bone transforms to be driven by C++ (here: DTrack)
+ * @note:  moved MyPoseableMeshComponent into a class deriving from AActor/APawn, because a standard component does not take over the values (always resets to default)
  *
  */
 UCLASS( 
@@ -66,16 +71,18 @@ public:
 	AMyPoseableMesh();
 public:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
-	/** First person camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* m_pCameraComponent;
-
-	UPROPERTY(VisibleAnywhere, Category = "DTrack Skeleton")
-	UPoseableMeshComponent* m_pPoseableMeshComponent;	// because we want a poseable mesh to be controlled by DTrack via C++
-														/** The m_pCapsuleComponent being used for movement collision (by CharacterMovement). Always treated as being vertically aligned in simple collision check functions. */
+	/** The m_pCapsuleComponent being used for movement collision (by CharacterMovement). Always treated as being vertically aligned in simple collision check functions. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "DTrack Skeleton")
 	UCapsuleComponent* m_pCapsuleComponent;
 
+	/** First Person Camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* m_pCameraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DTrack Skeleton")
+	UPoseableMeshComponent* m_pPoseableMeshComponent;	// because we want a poseable mesh to be controlled by DTrack via C++
+
+	 
 public:
 	/*************************/
 	/** overrides of UObject */
@@ -149,7 +156,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
 	TMap<int32, FName> m_DTrackIDToBoneMap;
 
-	// cache the start pos of the player
+	/// cached start pos of the player (this is a copy assigned during BeginPlay - changing it will not do anything)
 	FVector m_PlayerStartPos;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
@@ -157,4 +164,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
 	FRotator m_rotatorPatchForHand = FRotator(0.0, -90.0, -90.0);  // for that skeleton hand <-90,0,-90> is suitable... (XYZ)
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	FRotator m_ValueForBPRotation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	FVector m_ValueForBPLocation;
 };     
