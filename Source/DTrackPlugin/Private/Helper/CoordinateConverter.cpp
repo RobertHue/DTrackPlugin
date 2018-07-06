@@ -1,9 +1,5 @@
 #include "CoordinateConverter.h"
 
-// can also be used:
-// constexpr double mm_2_cm () { return static_cast<double>(1 / 10.0); }
-#define MM_2_CM 0.1
-
 FCoordinateConverter::FCoordinateConverter(EDTrackCoordinateSystemType n_coord_system)
 	:
 	m_trafo_normal (	// switches X and Y axis

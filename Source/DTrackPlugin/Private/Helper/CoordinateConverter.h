@@ -10,6 +10,10 @@
 constexpr double DEG_TO_RAD = (double)(M_PI) / 180.0f;
 constexpr double RAD_TO_DEG = (double)(180.0f) / M_PI;
 
+// can also be used:
+// constexpr double mm_2_cm () { return static_cast<double>(1 / 10.0); }
+#define MM_2_CM 0.1
+
 /**
 * This represents different room calibration default settings as
 * set in the DTrack system. Choose the one that corresponds with your setup

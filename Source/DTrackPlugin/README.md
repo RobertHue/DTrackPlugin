@@ -44,8 +44,15 @@ But for Unreal that location is at the base of the hand.
 
 So to get the same location corresponding to the DTrack one in Unreal you need to know Unreal's offset from base to index finger. Following code does that:
 
-`FVector relativeDBackOfHand = locationIndexFinger - locationBackOfHand;`
+`FVector relativeDBackOfHand = locationIndexFingerBase - locationBackOfHand;`
  
 The position of the end effector (here: tip of the index finger) is calculate as following:
 
 `FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand;`
+
+
+# Additional Infos:
+
+https://wiki.beyondunreal.com/Quaternion
+
+

@@ -170,4 +170,9 @@ public:
 	FRotator m_ValueForBPRotation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
 	FVector m_ValueForBPLocation;
+
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	TArray<FVector> m_HandREndEffectorLocations;
 };     

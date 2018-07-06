@@ -159,11 +159,19 @@ struct FDTrackFinger
 	float    m_hand_inner_phalanx_angle_roll;	/// angle in degrees (should be 0, because a finger cannot do rolls anatomically)
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Inner Middle Phalanx Angle (beta-DEG)"))
-	float    m_inner_middle_phalanx_angle;	/// angle in degrees
-
+	float    m_inner_middle_phalanx_angle;	/// angle in degrees : tilting your finger means a negative angle
+	 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Middle Outer Phalanx Angle (gamma-DEG)"))
-	float    m_middle_outer_phalanx_angle;	/// angle in degrees
-};
+	float    m_middle_outer_phalanx_angle;	/// angle in degrees : tilting your finger means a negative angle
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FQuat for finger_01_x bone"))
+	FQuat    m_hand_inner_phalanx_quater;	// in UE4:  finger_01_x
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FQuat for finger_02_x bone"))
+	FQuat    m_inner_middle_phalanx_quater; // in UE4:  finger_02_x
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FQuat for finger_03_x bone"))
+	FQuat    m_middle_outer_phalanx_quater; // in UE4:  finger_03_x
+}; 
 
 
 /**
