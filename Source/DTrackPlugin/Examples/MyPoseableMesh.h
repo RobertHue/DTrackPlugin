@@ -162,8 +162,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
 	FVector m_DefaultHandLocation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
-	FRotator m_rotatorPatchForHand = FRotator(0.0, -90.0, -90.0);  // for that skeleton hand <-90,0,-90> is suitable... (XYZ)
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	//FRotator m_rotatorPatchForHand = FRotator(0.0, -90.0, -90.0);  // for that skeleton hand <-90,0,-90> is suitable... (XYZ)
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
@@ -172,7 +172,15 @@ public:
 	FVector m_ValueForBPLocation;
 
 
-
+	// for the indicators (crosshairs showing the location and rotations of bones)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
 	TArray<FVector> m_HandREndEffectorLocations;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	TArray<FRotator> m_HandREndEffectorRotators;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	FVector m_HandLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	FRotator m_HandRotator;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DTrack Skeleton")
+	TArray<FDTrackFinger> m_FingerData;
 };     
