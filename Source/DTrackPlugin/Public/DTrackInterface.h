@@ -164,13 +164,21 @@ struct FDTrackFinger
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Middle Outer Phalanx Angle (gamma-DEG)"))
 	float    m_middle_outer_phalanx_angle;	/// angle in degrees : tilting your finger means a negative angle
 
-
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FQuat for finger_01_x bone"))
 	FQuat    m_hand_inner_phalanx_quater;	// in UE4:  finger_01_x
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FRotator for finger_01_x bone"))
+	FRotator m_hand_inner_phalanx_rotator;	// in UE4:  finger_01_x
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FQuat for finger_02_x bone"))
 	FQuat    m_inner_middle_phalanx_quater; // in UE4:  finger_02_x
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FRotator for finger_02_x bone"))
+	FRotator m_inner_middle_phalanx_rotator; // in UE4:  finger_02_x
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FQuat for finger_03_x bone"))
 	FQuat    m_middle_outer_phalanx_quater; // in UE4:  finger_03_x
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "FRotator for finger_03_x bone"))
+	FRotator m_middle_outer_phalanx_rotator; // in UE4:  finger_03_x
 }; 
 
 
