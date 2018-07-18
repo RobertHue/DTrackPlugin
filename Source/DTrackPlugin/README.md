@@ -1,7 +1,42 @@
-# DTrack Architecture
+# DTrack-Plugin Class Architecture
+
+The Class Architecture of the DTrack-Plugin is mainly divided into three parts. The Actor, the Plugin and a PollingThread.
+
+* PollingThread: 
+** The Polling Threads task is to pick up DTrack data coming from the DTrack SDK, hence the A.R.T. track controller.
+** It then Converts the DTrack-Space (cm, RHS) into Unreal's Space (mm, LHS) with the use of the FCoordinateConverter (SpaceConverter).
+** After this is done it places the data into a buffer (described in section #ref Data-Buffer), unless the quality value is 0 (which means that the target is not visible anymore)
+
+* Actor:
+** The Actor is just ticking  and therefore brings the Plugin to ticking
+** There can also be custom logic to do something when new converted DTrack data arrived inside the buffers.
+
+* Plugin:
+** The Plugins responsibily is to store the converted DTrack data into a Data-Buffer
+*** it does this using double-buffering. This has the advantage of low contention coming from the PollingThread locking the mutex on the buffer.
+***
 
 ![DTrack-Plugin UML Class Diagram](../../images/DTrackPlugin_UML_ClassDiagram.png)
+
+# Data-Buffer
+
+To store the data coming from DTrack for the different Game-Actors to pick up, there needs to be a shared memory between DTrackPollingThread and the game itself.
+
+To get a overview of how the structure looks like, see:
+
 ![DTrack-Plugin DataBuffer Structure](../../images/DataBufferStructure.png)
+
+# Space Conversion
+
+# Rotations
+For converting between spaces a similar concept from https://www.geometrictools.com/Documentation/ConvertingBetweenCoordinateSystems.pdf has been used.
+
+To convert from right-handed coordinate system (DTrack) to left-handed coordinate system (Unreal-Engine 4).
+This is done by flipping one axis direction, namely the z-axis (-Z).
+
+# Locations
+Also the units of DTrack and Unreal differ. In DTrack the unit of [cm] is used, whereas in Unreal the unit [mm] is used.
+
 
 # FINGERTRACKING
 
