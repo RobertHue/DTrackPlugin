@@ -328,6 +328,7 @@ void FDTrackPollThread::handle_hands() {
 		checkf(hand, TEXT("DTrack API error, hand address is null"));
 
 		if (hand->quality > 0) {
+<<<<<<< HEAD
 			FVector  handRoomLocation = m_coord_converter.from_dtrack_location(hand->loc);
 			FQuat handRoomRotationQuat = m_coord_converter.from_dtrack_rotation(hand->rot).Quaternion();
 
@@ -337,6 +338,10 @@ void FDTrackPollThread::handle_hands() {
 			//	handRoomRotationQuat = FQuat(FRotator(-tmp.Pitch, tmp.Yaw, -tmp.Roll));
 			//}
 
+=======
+			const FVector  handRoomLocation = m_coord_converter.from_dtrack_location(hand->loc);
+			const FQuat handRoomRotationQuat = m_coord_converter.from_dtrack_rotation(hand->rot).Quaternion();
+>>>>>>> 8e1ee1a5991b76ddcdfb0fc5327f8481d8811c27
 			const FQuat handRoomPatchRotationQuat = handRoomRotationQuat * patchQuat;
 			const FRotator handRoomRotation	= handRoomPatchRotationQuat.Rotator();
 			TArray<FDTrackFinger> fingers;	// an array of fingers
@@ -382,6 +387,7 @@ void FDTrackPollThread::handle_hands() {
 					Yaw   = around Z-axis	(up the finger)
 					Roll  = around X-axis	(along the finger)
 				*/
+<<<<<<< HEAD
 				// in case of left hand
 				FQuat adaptedFingerTipQuat =
 					handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
@@ -394,6 +400,13 @@ void FDTrackPollThread::handle_hands() {
 				//	adaptedFingerTipQuat = adaptedFingerTipQuat * FQuat(FRotator(0.f, 0.f, -180.f));
 				//}
 
+=======
+				FQuat adaptedFingerTipQuat =
+					handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
+					//* FQuat(FRotator(-90.f, 0.f, 0.f))	// rotatoe CCW 90 grad um X (Roll)
+					* FQuat(FRotator(0.f, -90.f, 90.f))		// rotate CCW 90 grad um Z (Yaw)
+				;
+>>>>>>> 8e1ee1a5991b76ddcdfb0fc5327f8481d8811c27
 				const FRotator adaptedFingerTipRotator = adaptedFingerTipQuat.Rotator();
 				finger.m_rotation = adaptedFingerTipRotator;
 				 
