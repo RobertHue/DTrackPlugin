@@ -328,8 +328,15 @@ void FDTrackPollThread::handle_hands() {
 		checkf(hand, TEXT("DTrack API error, hand address is null"));
 
 		if (hand->quality > 0) {
-			const FVector  handRoomLocation = m_coord_converter.from_dtrack_location(hand->loc);
-			const FQuat handRoomRotationQuat = m_coord_converter.from_dtrack_rotation(hand->rot).Quaternion();
+			FVector  handRoomLocation = m_coord_converter.from_dtrack_location(hand->loc);
+			FQuat handRoomRotationQuat = m_coord_converter.from_dtrack_rotation(hand->rot).Quaternion();
+
+			//if (hand->lr == 0) { // in case of left hand
+			//	// fix orientation~
+			//	FRotator tmp = handRoomRotationQuat.Rotator();
+			//	handRoomRotationQuat = FQuat(FRotator(-tmp.Pitch, tmp.Yaw, -tmp.Roll));
+			//}
+
 			const FQuat handRoomPatchRotationQuat = handRoomRotationQuat * patchQuat;
 			const FRotator handRoomRotation	= handRoomPatchRotationQuat.Rotator();
 			TArray<FDTrackFinger> fingers;	// an array of fingers
@@ -354,7 +361,7 @@ void FDTrackPollThread::handle_hands() {
 				const FVector retVec = m_coord_converter.from_dtrack_location(hand->finger[j].loc);
 				const FVector rotatedVector = handRoomRotationQuat.RotateVector(retVec); // rotatedVector is the Vector from IndexFingerBase to the individual FingerTips with the right Orientation
 				finger.m_relLocation = rotatedVector; // m_coord_converter.from_dtrack_location(hand->finger[j].loc); // local backOfHand relative location
-				finger.m_location    = rotatedVector + handRoomLocation;	// global room location
+				finger.m_location    = rotatedVector + handRoomLocation;	// global room location 
 				///////////////
 				/// the finger/phalanx_lengths and tip_radius
 				finger.m_outer_phalanx_length   = hand->finger[j].lengthphalanx[0] * MM_2_CM;
@@ -375,11 +382,18 @@ void FDTrackPollThread::handle_hands() {
 					Yaw   = around Z-axis	(up the finger)
 					Roll  = around X-axis	(along the finger)
 				*/
+				// in case of left hand
 				FQuat adaptedFingerTipQuat =
 					handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
 					//* FQuat(FRotator(-90.f, 0.f, 0.f))	// rotatoe CCW 90 grad um X (Roll)
-					* FQuat(FRotator(0.f, -90.f, 90.f))		// rotate CCW 90 grad um Z (Yaw)
+					* FQuat(FRotator(0.f, -90.f, 90.f))		// rotate CCW 90 grad um Z (Yaw); depends on how the skeleton is defined... (see patchQuat)
 				;
+
+				//if (hand->lr == 0) { // in case of left hand
+				//	// fix orientation~
+				//	adaptedFingerTipQuat = adaptedFingerTipQuat * FQuat(FRotator(0.f, 0.f, -180.f));
+				//}
+
 				const FRotator adaptedFingerTipRotator = adaptedFingerTipQuat.Rotator();
 				finger.m_rotation = adaptedFingerTipRotator;
 				 

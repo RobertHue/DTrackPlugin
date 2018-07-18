@@ -9,41 +9,38 @@
 6.    -> [Blueprint](#blueprint)
 
 ## About
-This is a plug-in for the Unreal Engine 4.17 or later with the purpose of native integration 
-of the Advanded Realtime Tracking DTrack and DTrack2 tracking solutions.
+This is a plug-in for the Unreal Engine 4.19 or later with the purpose of native integration of the Advanded Realtime Tracking DTrack and DTrack2 tracking solutions.
 It supports both Blueprint and native C++ usage.
 
 This plug-in includes the official DTrack SDK 2.4.1 in binary form. Its license is identical to this.
 
 ## Preconditions
-This plugin only supports the Windows 64 bit platform. To use it you need the Unreal Engine 4.17 or later. 
-or later and Microsoft Visual Studio 2015 (Express or Community Edition should suffice). Other platforms are not supported.
+This plugin only supports the Windows 64 bit platform, due to it's precompiled DTrack SDK static library. To use it you need the Unreal Engine 4.19 or later and Microsoft Visual Studio 2015 (Express or Community Edition should suffice). Other platforms are not supported.
 
 ## Installation
-To use this, setup your Unreal Project as a C++ Project (This doesn't mean there's 
-need to code. The project can still focus on Blueprint usage). In your project's root folder,
-create a directory named `Plugins` if it is not already there. Then clone or checkout 
-this repository into this folder and regenerate your project. That's all.
+To use this, setup your Unreal Project as a C++ Project (This doesn't mean there needs to be only code. The project can still focus on Blueprint usage). In your project's root folder, create a directory named `Plugins` if it is not already there. Then clone or checkout this repository into this folder and regenerate your project. That's all.
 
-### for adding the submodule eigen
+For adding the submodule eigen:
 
-Run "submodule update --init --recursive"
+Run ```"submodule update --init --recursive"```
 
-Alternatively run "git clone --recursive <project url>"
+Alternatively run ```"git clone --recursive <project url>"```
 
 ## Usage
 Using this functionality is generally focused on enhancing any Actor with tracking information. 
 This can happen in either C++ or Blueprint. There's usually 3 steps involved:
 
 1. Add a `DTrackComponent` to your actor. This component will act as glue between your actor and the underlying plug-in. It also configures the plugin with the settings for your DTrack system such as server hostname or port. Please note that at this point you can only connect to one such endpoint. You can have multiple components but they must all point to the same server endpoint. Any of them will be chosen to initially setup tracking.
-2. Add the `IDTrackInterface` to your actor. Implementing this interface will allow you to react to the different kinds of tracking data coming in.
-3. Implement the desired events on the interface as you choose
 
-All translations and rotations coming in on the interface will already be tranlated in Unreal's default coordinate system und use cm as units. In order for this to work correctly the component must know about the room calibration (coordinate system) setting in your DTrack system. The property "DTrack Room Calibration" offers 3 common default settings from which you can choose.
+2. Add the `IDTrackInterface` to your actor. Implementing this interface will allow you to react to the different kinds of tracking data coming in.
+
+3. Implement the desired events on the interface as you choose.
+
+All translations and rotations coming in on the interface will already be tranlated in Unreal's default coordinate system und use cm as units. In order for this to work correctly the component must know about the room calibration (coordinate system) setting in your DTrack system. The property "DTrack Room Calibration" offers 3 common default settings from which you can choose:
 
 * Normal - Right handed with Z is up and Y is front, X to the right
-* Powerwall - Right handed with X is right, Y as up and -Z as front
 * Unreal Adapted - Right handed with Z as up and X as front
+* Powerwall - Right handed with X is right, Y as up and -Z as front (not tested yet)
 
 Your tracking data will be treated according to this setting so it must correspond to your room calibration.
 
@@ -136,6 +133,8 @@ void AMyDTrackUsingActor::OnFlystickJoystick_Implementation(const int32 Flystick
 
 ```
 
+To give some working Examples, there has been made some for `Fingertracking` for left and right hand (see: MyPoseableMesh.h) and also `Body Tracking` (see: MySceneComponent.h).
+
 Before you start your game, select any actor instance of this type and go to the properties window to set your server settings.
 
 ![Properties Screenshot](/images/Properties_Page.jpg)
@@ -152,6 +151,12 @@ This is equivalent to deriving from the `IDTrackInterface` base in your C++ acto
 Once this is done, you can implement any of the events the C++ actor could implement. To do this, go to the "Event Graph" tab and right click into the window. From the context menu select "Add Event" -> "DTrack Events" and choose which one you would like to implement. From there it's straight foward blueprint.
 
 When using, obviously make sure the plugin is loaded and you don't accidently unload it. Also, make sure your Actor is marked as movable.
+
+## Feature Requests
+Check out the Trello board to view new features, fixes and TODO's: 
+
+[![DTrack-Plugin Trello](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin)](https://trello.com/b/ypqTVBle/artv2 "DTrack-Plugin Trello - Click to View!")
+
 
 ## License
 Copyright (c) 2017, Advanced Realtime Tracking GmbH

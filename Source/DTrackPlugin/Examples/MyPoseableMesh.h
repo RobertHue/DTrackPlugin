@@ -81,6 +81,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DTrack Skeleton")
 	UPoseableMeshComponent* m_pPoseableMeshComponent;	// because we want a poseable mesh to be controlled by DTrack via C++
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DTrack Skeleton")
+	UPoseableMeshComponent* m_pPoseableMeshComponentLeftHand;	// because we want a poseable mesh to be controlled by DTrack via C++
 
 	 
 public:
