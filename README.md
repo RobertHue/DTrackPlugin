@@ -155,7 +155,7 @@ When using, obviously make sure the plugin is loaded and you don't accidently un
 ## Feature Requests
 Check out the Trello board to view new features, fixes and TODO's: 
 
-[![DTrack-Plugin Trello](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin)](https://trello.com/b/ypqTVBle/artv2 "DTrack-Plugin Trello - Click to View!")
+[![DTrack-Plugin Trello](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin)](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin "DTrack-Plugin Trello - Click to View!")
 
 
 ## License
