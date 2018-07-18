@@ -1,7 +1,7 @@
 # DTrack Architecture
 
-![DTrack-Plugin UML Class Diagram](../images/DTrackPlugin_UML_ClassDiagram.png)
-![DTrack-Plugin DataBuffer Structure](../images/DataBufferStructure.png)
+![DTrack-Plugin UML Class Diagram](../../images/DTrackPlugin_UML_ClassDiagram.png)
+![DTrack-Plugin DataBuffer Structure](../../images/DataBufferStructure.png)
 
 # FINGERTRACKING
 
