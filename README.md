@@ -157,6 +157,14 @@ Check out the Trello board to view new features, fixes and TODO's:
 
 [![DTrack-Plugin Trello](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin)](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin "DTrack-Plugin Trello - Click to View!")
 
+### TODO's:
+
+* Due to unity's popularity a port to it would be appreciated.
+* Request to Unreal that UPoseableMeshComponent needs a working Collision with other Meshes (static).
+* Request to Unreal that USkeletalMeshComponent needs a way to alter bone location and rotation inside the SkeletalMesh.
+
+For Development (Architecture and Notes about Features), see the following link: 
+[Architecture and Notes](Source\DTrackPlugin)
 
 ## License
 Copyright (c) 2017, Advanced Realtime Tracking GmbH
