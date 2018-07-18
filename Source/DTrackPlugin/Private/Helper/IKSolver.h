@@ -6,7 +6,7 @@
 #include "Math/Matrix.h"
 #include "Math/Rotator.h"
 #include "Containers/Array.h"
-#include "Helper/CoordinateConverter.h"
+#include "Helper/SpaceConverter.h"
 #include <cstdlib>
 #include <queue>	// for traversing the Tree of IKSegment 
 #include <vector>

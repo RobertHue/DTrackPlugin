@@ -28,7 +28,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Private/Helper/CoordinateConverter.h"
+#include "Private/Helper/SpaceConverter.h"
 
 #include "DTrackInterface.generated.h"
 
@@ -54,7 +54,6 @@ enum class EDTrackFingerType : uint8
 USTRUCT(BlueprintType)
 struct FDTrackMarker 
 {
-
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
@@ -73,7 +72,6 @@ struct FDTrackMarker
 USTRUCT(BlueprintType)
 struct FDTrackBody 
 {
-
 	GENERATED_BODY()
 		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
@@ -92,7 +90,6 @@ struct FDTrackBody
 USTRUCT(BlueprintType)
 struct FDTrackFlystick 
 {
-
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
@@ -117,7 +114,6 @@ struct FDTrackFlystick
 USTRUCT(BlueprintType)
 struct FDTrackFinger 
 {
-
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
@@ -148,7 +144,6 @@ struct FDTrackFinger
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Outer Phalanx Length"))
 	float    m_outer_phalanx_length;
-
 
 	// following angles are in degrees   /// tbh has 2DoF (around local fingertracking Z (Yaw) and Y (Pitch) axis)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Hand inner Phalanx Angle (alpha-DEG). The Angle around X (Pitch)."))
@@ -188,21 +183,20 @@ struct FDTrackFinger
 USTRUCT(BlueprintType, Category=DTrack)
 struct FDTrackHand 
 {
-
 	GENERATED_BODY()
 
-		/// true if this is the right hand
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Right"))
-		bool m_right;
+	/// true if this is the right hand
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Right"))
+	bool m_right;
 
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Location"))
-		FVector  m_location;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Location"))
+	FVector  m_location;
 
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Rotation"))
-		FRotator m_rotation;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Rotation"))
+	FRotator m_rotation;
 
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Fingers"))
-		TArray<FDTrackFinger> m_fingers;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Fingers"))
+	TArray<FDTrackFinger> m_fingers;
 };
 
 /**
@@ -211,7 +205,6 @@ struct FDTrackHand
 USTRUCT(BlueprintType)
 struct FDTrackJoint 
 {
-
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
@@ -245,7 +238,6 @@ struct FDTrackJoint
 USTRUCT(BlueprintType)
 struct FDTrackHuman 
 {
-
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Joints"))
@@ -274,7 +266,6 @@ class UDTrackInterface : public UInterface
  */
 class DTRACKPLUGIN_API IDTrackInterface 
 {
-
 	GENERATED_IINTERFACE_BODY()
 
 

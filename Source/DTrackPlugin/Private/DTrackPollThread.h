@@ -29,7 +29,7 @@
 #include "CoreMinimal.h"
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeCounter.h"
-#include "Helper/CoordinateConverter.h"
+#include "Helper/SpaceConverter.h"
 
 #include <memory> 
 #include <string>
@@ -110,7 +110,7 @@ private:
 
 private:
 
-	FCoordinateConverter m_coord_converter;
+	FSpaceConverter m_space_converter;
 
 public:
 

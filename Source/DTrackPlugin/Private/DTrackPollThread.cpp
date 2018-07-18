@@ -57,7 +57,7 @@ FDTrackPollThread::FDTrackPollThread(const UDTrackComponent *n_client, FDTrackPl
 		, m_dtrack_server_ip(TCHAR_TO_UTF8(*n_client->m_dtrack_server_ip))
 		, m_dtrack_client_port(n_client->m_dtrack_client_port)
 		, m_stop_counter(0)
-		, m_coord_converter(n_client->m_coordinate_system)
+		, m_space_converter(n_client->m_coordinate_system)
 {
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("Constructor of TDTrackPollThread (the factory class for DTrack threads)"));
 
@@ -265,8 +265,8 @@ void FDTrackPollThread::handle_bodies() {
 		if (body->quality > 0) {	// with quality you can check whether the registered target is being tracked!
 			// Quality below zero means the body is not visible to the system right now. I won't call the interface
 
-			FVector translation = m_coord_converter.from_dtrack_location(body->loc);
-			FRotator rotation = m_coord_converter.from_dtrack_rotation(body->rot);
+			FVector translation = m_space_converter.from_dtrack_location(body->loc);
+			FRotator rotation = m_space_converter.from_dtrack_rotation(body->rot);
 
 			m_plugin->inject_body_data(body->id, true, translation, rotation);
 		}
@@ -287,8 +287,8 @@ void FDTrackPollThread::handle_flysticks() {
 
 		if (flystick->quality > 0) {
 			// Quality below zero means the body is not visible to the system right now. I won't call the interface
-			FVector translation = m_coord_converter.from_dtrack_location(flystick->loc);
-			FRotator rotation = m_coord_converter.from_dtrack_rotation(flystick->rot);
+			FVector translation = m_space_converter.from_dtrack_location(flystick->loc);
+			FRotator rotation = m_space_converter.from_dtrack_rotation(flystick->rot);
 
 			// create a state vector for the button states
 			TArray<int> buttons;
@@ -328,8 +328,8 @@ void FDTrackPollThread::handle_hands() {
 		checkf(hand, TEXT("DTrack API error, hand address is null"));
 
 		if (hand->quality > 0) {
-			FVector  handRoomLocation = m_coord_converter.from_dtrack_location(hand->loc);
-			FQuat handRoomRotationQuat = m_coord_converter.from_dtrack_rotation(hand->rot).Quaternion();
+			FVector  handRoomLocation = m_space_converter.from_dtrack_location(hand->loc);
+			FQuat handRoomRotationQuat = m_space_converter.from_dtrack_rotation(hand->rot).Quaternion();
 
 			//if (hand->lr == 0) { // in case of left hand
 			//	// fix orientation~
@@ -337,8 +337,6 @@ void FDTrackPollThread::handle_hands() {
 			//	handRoomRotationQuat = FQuat(FRotator(-tmp.Pitch, tmp.Yaw, -tmp.Roll));
 			//}
 
-			const FVector  handRoomLocation = m_coord_converter.from_dtrack_location(hand->loc);
-			const FQuat handRoomRotationQuat = m_coord_converter.from_dtrack_rotation(hand->rot).Quaternion();
 			const FQuat handRoomPatchRotationQuat = handRoomRotationQuat * patchQuat;
 			const FRotator handRoomRotation	= handRoomPatchRotationQuat.Rotator();
 			TArray<FDTrackFinger> fingers;	// an array of fingers
@@ -360,9 +358,9 @@ void FDTrackPollThread::handle_hands() {
 				// unused data:		(probably also not relevant for the UE4-Skeleton)
 				///////////////
 				/// the finger location globally and locally (to the indexFingerBase)
-				const FVector retVec = m_coord_converter.from_dtrack_location(hand->finger[j].loc);
+				const FVector retVec = m_space_converter.from_dtrack_location(hand->finger[j].loc);
 				const FVector rotatedVector = handRoomRotationQuat.RotateVector(retVec); // rotatedVector is the Vector from IndexFingerBase to the individual FingerTips with the right Orientation
-				finger.m_relLocation = rotatedVector; // m_coord_converter.from_dtrack_location(hand->finger[j].loc); // local backOfHand relative location
+				finger.m_relLocation = rotatedVector; // m_space_converter.from_dtrack_location(hand->finger[j].loc); // local backOfHand relative location
 				finger.m_location    = rotatedVector + handRoomLocation;	// global room location 
 				///////////////
 				/// the finger/phalanx_lengths and tip_radius
@@ -375,7 +373,7 @@ void FDTrackPollThread::handle_hands() {
 
 				///////////////////////////////////////////////////////////////////////////////////////////
 				// here: only the phalanx angles are of importance and not the Rotations... 
-				const FRotator convertedFingerTipRotator = m_coord_converter.from_dtrack_rotation(hand->finger[j].rot);
+				const FRotator convertedFingerTipRotator = m_space_converter.from_dtrack_rotation(hand->finger[j].rot);
 
 				////////////////////////////
 				/* FQuat
@@ -395,12 +393,6 @@ void FDTrackPollThread::handle_hands() {
 				//	// fix orientation~
 				//	adaptedFingerTipQuat = adaptedFingerTipQuat * FQuat(FRotator(0.f, 0.f, -180.f));
 				//}
-
-				FQuat adaptedFingerTipQuat =
-					handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
-					//* FQuat(FRotator(-90.f, 0.f, 0.f))	// rotatoe CCW 90 grad um X (Roll)
-					* FQuat(FRotator(0.f, -90.f, 90.f))		// rotate CCW 90 grad um Z (Yaw)
-				;
 				const FRotator adaptedFingerTipRotator = adaptedFingerTipQuat.Rotator();
 				finger.m_rotation = adaptedFingerTipRotator;
 				 
@@ -524,11 +516,11 @@ void FDTrackPollThread::handle_human_model() {
 			// They do carry an ID though so I suppose the caller must be aware of that.
 			if (human->joint[j].quality > 0.1) {
 				joint.m_id = human->joint[j].id;
-				joint.m_location = m_coord_converter.from_dtrack_location(human->joint[j].loc);
-				joint.m_rotation = m_coord_converter.from_dtrack_rotation(human->joint[j].rot);
-				joint.m_angles.Add(human->joint[j].ang[0]);   // well, are they Euler angles of the same rot as above or not?
-				joint.m_angles.Add(human->joint[j].ang[1]);
-				joint.m_angles.Add(human->joint[j].ang[2]);
+				joint.m_location = m_space_converter.from_dtrack_location(human->joint[j].loc);
+				joint.m_rotation = m_space_converter.from_dtrack_rotation(human->joint[j].rot);
+				//joint.m_angles.Add(human->joint[j].ang[0]);   // well, are they Euler angles of the same rot as above or not?
+				//joint.m_angles.Add(human->joint[j].ang[1]);
+				//joint.m_angles.Add(human->joint[j].ang[2]);
 				joints.Add(std::move(joint));
 			}
 		}

@@ -6,7 +6,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 
-#include "Helper/CoordinateConverter.h" // for RAD_TO_DEG
+//#include "Helper/SpaceConverter.h" // for RAD_TO_DEG
 
 
 AMyPoseableMesh::AMyPoseableMesh()

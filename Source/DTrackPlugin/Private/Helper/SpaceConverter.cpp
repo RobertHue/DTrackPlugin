@@ -1,6 +1,6 @@
-#include "CoordinateConverter.h"
+#include "SpaceConverter.h"
 
-FCoordinateConverter::FCoordinateConverter(EDTrackCoordinateSystemType n_coord_system)
+FSpaceConverter::FSpaceConverter(EDTrackCoordinateSystemType n_coord_system)
 	:
 	m_trafo_normal (	// switches X and Y axis
 		FPlane( 0,  1,  0,  0 ),
@@ -57,7 +57,7 @@ FCoordinateConverter::FCoordinateConverter(EDTrackCoordinateSystemType n_coord_s
 }
 
 // translate a DTrack body location (translation in mm) into Unreal Location (in cm)
-FVector FCoordinateConverter::from_dtrack_location(const double(&n_translation)[3])
+FVector FSpaceConverter::from_dtrack_location(const double(&n_translation)[3])
 { 
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("FCoordinateConversionHelper::from_dtrack_location()"));
 
@@ -99,7 +99,7 @@ FVector FCoordinateConverter::from_dtrack_location(const double(&n_translation)[
 
 // translate DTrack 3x3 rotation matrix to FRotator according to selected room calibration
 // @ToDo needs a bit more and better description
-FRotator FCoordinateConverter::from_dtrack_rotation(const double(&n_matrix)[9])
+FRotator FSpaceConverter::from_dtrack_rotation(const double(&n_matrix)[9])
 {
 	UE_LOG(DTrackPollThreadLog, Display, TEXT("FCoordinateConversionHelper::from_dtrack_rotation()"));
 
@@ -151,7 +151,7 @@ FRotator FCoordinateConverter::from_dtrack_rotation(const double(&n_matrix)[9])
 	return r_adapted.GetTransposed().Rotator();	// FRotator is the Rotation representation in Euler angles.
 }
 
-const EDTrackCoordinateSystemType FCoordinateConverter::getCoordinateSystemType() const
+const EDTrackCoordinateSystemType FSpaceConverter::getCoordinateSystemType() const
 {
 	return m_coordinate_system;
 }

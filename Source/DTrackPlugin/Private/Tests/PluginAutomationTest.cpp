@@ -9,7 +9,7 @@
 #include "DTrackComponent.h"
  
 // the class that you want to test:
-#include "Helper/CoordinateConverter.h"
+#include "Helper/SpaceConverter.h"
 
 // Definition von Log-Ausgaben
 DEFINE_LOG_CATEGORY_STATIC(LogEditorAutomationTests, Log, All);
@@ -68,7 +68,7 @@ inline bool FDTrackPollThreadTest::RunTest(const FString& Parameters)
 {
 	UE_LOG(LogEngineAutomationTests, Log, TEXT("Inside FPlaceholderTest::RunTest"));
 
-	FCoordinateConverter coordConverter;
+	FSpaceConverter coordConverter;
 	TestEqual(
 		"Is the EDTrackCoordSysType the CST_Normal one?",	// What the test is about
 		coordConverter.getCoordinateSystemType(),			// Actual

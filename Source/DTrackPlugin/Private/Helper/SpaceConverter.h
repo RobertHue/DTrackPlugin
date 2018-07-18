@@ -44,11 +44,11 @@ enum class EDTrackCoordinateSystemType : uint8
  * 
  * 
  */
-class FCoordinateConverter 
+class FSpaceConverter 
 {
 
 public:
-	FCoordinateConverter(EDTrackCoordinateSystemType coordinate_system = EDTrackCoordinateSystemType::CST_Normal);
+	FSpaceConverter(EDTrackCoordinateSystemType coordinate_system = EDTrackCoordinateSystemType::CST_Normal);
 
 public:
 
