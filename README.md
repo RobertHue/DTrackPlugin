@@ -163,8 +163,8 @@ Check out the Trello board to view new features, fixes and TODO's:
 * Request to Unreal that UPoseableMeshComponent needs a working Collision with other Meshes (static).
 * Request to Unreal that USkeletalMeshComponent needs a way to alter bone location and rotation inside the SkeletalMesh.
 
-For Development (Architecture and Notes about Features), see the following link: 
-[Architecture and Notes](Source\DTrackPlugin)
+For Development(Architecture and Notes about Features), see the following link: 
+[Architecture and Development Notes](Source/DTrackPlugin)
 
 ## License
 Copyright (c) 2017, Advanced Realtime Tracking GmbH

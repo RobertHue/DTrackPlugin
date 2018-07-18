@@ -1,5 +1,7 @@
 # DTrack Architecture
-![Blueprint_Interface Screenshot](/images/Blueprint_interface_property.jpg)
+
+![DTrack-Plugin UML Class Diagram](../images/DTrackPlugin_UML_ClassDiagram.png)
+![DTrack-Plugin DataBuffer Structure](../images/DataBufferStructure.png)
 
 # FINGERTRACKING
 
