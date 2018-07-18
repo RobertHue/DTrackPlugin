@@ -214,6 +214,9 @@ struct FDTrackJoint
 
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayName = "Tracked State"))
+	bool  m_isBeingTracked;
+
 	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "ID"))
 	int32    m_id;
 
@@ -223,13 +226,16 @@ struct FDTrackJoint
 	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Rotation"))
 	FRotator m_rotation;
 
+	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "QuatRotation"))
+	FQuat m_quaternion;
+
 	/// angles in relation to the joint coordinate system
 	/**
 	 * @todo if this means Euler angles, hand them out as a rotator
 	 *    if they are then identical to m_rotation, remove.
 	 */
-	UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Angles"))
-	TArray<float> m_angles;
+	//UPROPERTY(BlueprintReadOnly, meta = (DisplayName = "Angles"))
+	//TArray<float> m_angles;
 };
 
 

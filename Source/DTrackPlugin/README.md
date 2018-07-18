@@ -1,3 +1,6 @@
+# DTrack Architecture
+![Blueprint_Interface Screenshot](/images/Blueprint_interface_property.jpg)
+
 # FINGERTRACKING
 
 ## Applying the DTrack provided angles to all the effectors in the kinematic chain
