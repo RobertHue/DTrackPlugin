@@ -385,8 +385,7 @@ void FDTrackPollThread::handle_hands() {
 				// in case of left hand
 				FQuat adaptedFingerTipQuat =
 					handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
-					//* FQuat(FRotator(-90.f, 0.f, 0.f))	// rotatoe CCW 90 grad um X (Roll)
-					* FQuat(FRotator(0.f, -90.f, 90.f))		// rotate CCW 90 grad um Z (Yaw); depends on how the skeleton is defined... (see patchQuat)
+					* FQuat(FRotator(0.f, -90.f, 90.f))		// rotatoe CCW 90 grad um X (Roll) & rotate CCW 90 grad um Z (Yaw)
 				;
 
 				//if (hand->lr == 0) { // in case of left hand
@@ -412,15 +411,17 @@ void FDTrackPollThread::handle_hands() {
 				const FQuat rotationBetaQuat(quatMiddle.GetUpVector(), -finger.m_inner_middle_phalanx_angle * DEG_TO_RAD);
 				const FQuat quatInner  = rotationBetaQuat * quatMiddle;		// first apply FQuat on right side then left
 
+				////////////////////////////////////////////////////////////////////////
 				finger.m_middle_outer_phalanx_quater = quatOuter;	//  quatOuter
 				finger.m_inner_middle_phalanx_quater = quatMiddle;	//  quatMiddle
 				finger.m_hand_inner_phalanx_quater   = quatInner;	//  quatInner
-				////////////////////////////////////////////////////////////////////////
 
+				////////////////////////////////////////////////////////////////////////
 				finger.m_middle_outer_phalanx_rotator = finger.m_middle_outer_phalanx_quater.Rotator();	// rotatorOuter
 				finger.m_inner_middle_phalanx_rotator = finger.m_inner_middle_phalanx_quater.Rotator();	// rotatorMiddle
 				finger.m_hand_inner_phalanx_rotator   = finger.m_hand_inner_phalanx_quater.Rotator();	// rotatorInner
 
+				////////////////////////////////////////////////////////////////////////
 				finger.m_hand_inner_phalanx_angle_pitch = finger.m_hand_inner_phalanx_rotator.Pitch;
 				finger.m_hand_inner_phalanx_angle_yaw   = finger.m_hand_inner_phalanx_rotator.Yaw;
 				finger.m_hand_inner_phalanx_angle_roll  = finger.m_hand_inner_phalanx_rotator.Roll;

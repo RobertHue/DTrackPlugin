@@ -3,7 +3,7 @@
 ## Table of Contents
 1. [About](#about)
 2. [DTrack-Plugin Class Architecture](#dtrack-plugin class architecture)
-3. [Data-Buffer](#data-Buffer)
+3. [Data-Buffer](#data-buffer)
 4.  -> [Double-Buffering](#double-buffering)
 5.  -> [Data-Structure](#data-structure)
 6. [Space Conversion](#space conversion)
@@ -16,7 +16,7 @@
 
 ## DTrack-Plugin Class Architecture
 
-The Class Architecture of the DTrack-Plugin, which controls an Actor, is mainly divided into three parts:
+The Class Architecture of the DTrack-Plugin, which controls an Actor, is mainly divided into three parts (from right to left):
 
 * The `DTrackPollThread`'s task is to pick up DTrack data coming from the DTrack SDK, hence the A.R.T. track controller. It then Converts the DTrack-Space (mm, RHS) into Unreal's Space (cm, LHS) with the use of the FCoordinateConverter (SpaceConverter).
 After this is done it places ("injects") the newly converted data into a data-buffer (see #Data-Buffer). In case of the quality being Zero (0), it doesn't convert or inject anything. Hence the PollThread is there to ease the game loop off being overloaded too much by doing that kind of processing. 
@@ -42,11 +42,11 @@ To swap out the two buffers, so that the Plugin can use the new data, there has 
 
 <sup>1</sup>   In reality the Actor does not pick up anything, whereas the DTrackComponent does a callback on the Actor's implemented IDTrackInterface-Method
 
-<sup>2</sup>   There has been a bug, where targets not being visible made the connected object inside unreal wiggle around. This bug got solved by not writing new data into the injected data-buffer.
+<sup>2</sup>   There has been a bug, where targets not being visible made the connected object inside Unreal wiggle around. This bug got solved by not writing new data into the injected data-buffer.
 
 ### Data (Buffer) Structure
 
-To get a overview of how the structure looks like, see:
+To get an overview of how the structure looks like, see:
 
 ![DTrack-Plugin DataBuffer Structure](../../images/DataBufferStructure.png)
 
@@ -75,9 +75,9 @@ Also the units of DTrack and Unreal differ. In DTrack the unit of [cm] is used, 
 
 ## Fingertracking
 
-### Unreal Mesh Hand:
+In the first section the differences between Unreal's Skeleton and DTrack's Skeleton will be shown. Afterwards there will be given some insight on what kind of conversion needs to be done to get to the Unreal Skeleton Coordinate system. In the last subsection you will get to see some of the challenges there are, because every Artist can choose different kind of Skeletons and Meshes.
 
-The Unreal Mesh uses a different coordinate system as the one used by DTrack. 
+### Differences between Unreal's and the DTrack's Hand-Skeleton
 
 #### Right Hand
 
@@ -101,48 +101,60 @@ Whereas, for the left hand Unreal uses a LHS coordinate system, where the X-Axis
 
 As depicted in the image below, the DTrack model of a human left hand.
 
-
-
-
-### Applying the DTrack provided angles to all the effectors in the kinematic chain
-
-One approach is to get the different angles between the finger bones and apply them to the unreal skeleton. A Disadvantage in this solution is, that when your fingers don't have the lengths of the unreal skeleton fingers, then your end-effector position may be off (even though DTrack uses an IK-Method and statistics about fingers internally).
+### Getting the Hand-Inner-Angle
 
 Only problem is, that DTrack does not provide the angle between inner phalanx to backOfHand. These can be calculated as follows:
 
+For the Right Hand:
 ```
-FRotator rotatorFingerTip = m_coord_converter.from_dtrack_rotation(hand->finger[j].rot);
-finger.m_rotation = FRotator(rotatorFingerTip);
-FQuat fingerTipOrientation(finger.m_rotation);
+FQuat adaptedFingerTipQuat =
+	handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
+	* FQuat(FRotator(0.f, -90.f, 90.f))		// rotatoe CCW 90 grad um X (Roll) & rotate CCW 90 grad um Z (Yaw)
+;
 
+const FRotator adaptedFingerTipRotator = adaptedFingerTipQuat.Rotator();
+finger.m_rotation = adaptedFingerTipRotator;
+ 
+// rotate the coordinate system into the right UE-Skeleton coord system:
+const FQuat fingerTipOrientation(adaptedFingerTipRotator);
+ 
 finger.m_middle_outer_phalanx_angle = hand->finger[j].anglephalanx[0];  // gamma
 finger.m_inner_middle_phalanx_angle = hand->finger[j].anglephalanx[1];	// beta
 
-FQuat rotationGammaQuat(FVector::ForwardVector, -finger.m_middle_outer_phalanx_angle * DEG_TO_RAD); 
-FQuat rotationBetaQuat(FVector::ForwardVector,  -finger.m_inner_middle_phalanx_angle * DEG_TO_RAD);
+// calucalte backwards (analitically, with quaternions):
+const FQuat quatOuter  = fingerTipOrientation;
 
-FQuat quatOuter = fingerTipOrientation;
-FQuat quatMiddle = quatOuter  * rotationGammaQuat;		// first apply rotationGammaQuat and then quatOuter
-FQuat quatInner  = quatMiddle * rotationBetaQuat;		// first apply rotationBetaQuat  and then quatMiddle
+const FQuat rotationGammaQuat(quatOuter.GetUpVector(), -finger.m_middle_outer_phalanx_angle * DEG_TO_RAD);
+const FQuat quatMiddle = rotationGammaQuat * quatOuter;		// first apply FQuat on right side then left
 
-// add to proper UE4-rotation part: (is needed because forward is pointing to the negative side upwards the finger bones)
-FRotator rotatorInner = quatInner.Rotator();
-finger.m_hand_inner_phalanx_angle_pitch = -rotatorInner.Roll - 180.f;
-finger.m_hand_inner_phalanx_angle_yaw = rotatorInner.Yaw - 180.f;
-finger.m_hand_inner_phalanx_angle_roll = rotatorInner.Pitch; // should be zero (unchanged), because its not possible to do a finger twist.
+const FQuat rotationBetaQuat(quatMiddle.GetUpVector(), -finger.m_inner_middle_phalanx_angle * DEG_TO_RAD);
+const FQuat quatInner  = rotationBetaQuat * quatMiddle;		// first apply FQuat on right side then left
+
+////////////////////////////////////////////////////////////////////////
+finger.m_middle_outer_phalanx_quater = quatOuter;	//  quatOuter
+finger.m_inner_middle_phalanx_quater = quatMiddle;	//  quatMiddle
+finger.m_hand_inner_phalanx_quater   = quatInner;	//  quatInner
+
+////////////////////////////////////////////////////////////////////////
+finger.m_middle_outer_phalanx_rotator = finger.m_middle_outer_phalanx_quater.Rotator();	// rotatorOuter
+finger.m_inner_middle_phalanx_rotator = finger.m_inner_middle_phalanx_quater.Rotator();	// rotatorMiddle
+finger.m_hand_inner_phalanx_rotator   = finger.m_hand_inner_phalanx_quater.Rotator();	// rotatorInner
 ```
 
-The thumb is a challenge in itself, due to its initial default rotation in UE4. Therefore I added some offset -180.f to the angles in the base bone hand_inner_phalanx_angle.
+### Approaches
 
-### Applying DTrack end effectors position & rotation and letting unreal do the IK
+#### Applying the DTrack provided angles to all the effectors in the kinematic chain
 
-Another approach is to use the DTrack position and rotation for the finger tips (the end effectors) and letting unreal do the Inverse Kinematics (IK) calculations.
+One approach is to get the different angles or rotations between the finger bones and apply them to the Unreal skeleton. A Disadvantage in this solution is, that in case your fingers don't have the lengths of the Unreal skeleton fingers, then your end-effector position may be off. Unless you apply the DTrack-calculated finger lengths to the Unreal skeleton ones, which will create a finger mesh being unproportional. So we don't want that.
+
+#### Applying DTrack end effectors position & rotation and letting Unreal do the IK
+
+Another approach is to use the DTrack position and rotation for the finger tips (the end effectors) and letting Unreal do the Inverse Kinematics (IK) calculations.
 
 Every manufacturer can define their bone-lengths (hence the joint-locations) at their own demand. Also some artists can define their bones with offsets in their custom Skeleton.
  
 So a challenge here is, that in DTrack the fingerTip locations are relative to the back of the hand, whose coordinate system is placed where the index finger begins, as shown in the picture below:
 
-![DTrack model of a human right hand](../Resources/../path/to/DTrack model of a human right hand.png?raw=true "DTrack model of a human right hand")
 
 But for Unreal that location is at the base of the hand. 
 
@@ -157,6 +169,5 @@ The position of the end effector (here: tip of the index finger) is calculate as
 
 ## Additional Infos:
 
-https://wiki.beyondunreal.com/Quaternion
-
-
+![wiki Quaternion](https://wiki.beyondunreal.com/Quaternion)
+![Converting Between Coordinate Systems](../../images/ConvertingBetweenCoordinateSystems.pdf)
