@@ -2,19 +2,19 @@
 
 ## Table of Contents
 1. [About](#about)
-2. [DTrack-Plugin Class Architecture](#dtrack-plugin class architecture)
+2. [DTrack-Plugin Class-Architecture](#dtrack-plugin-class-architecture)
 3. [Data-Buffer](#data-buffer)
 4.  -> [Double-Buffering](#double-buffering)
 5.  -> [Data-Structure](#data-structure)
-6. [Space Conversion](#space conversion)
+6. [Space-Conversion](#space-conversion)
 7.  -> [Rotations](#rotations)
 8.  -> [Locations](#locations)
 9. [Fingertracking](#fingertracking)
-10. [Additional Infos](#additional infos)
+10. [Additional-Infos](#additional-infos)
 
 ## About
 
-## DTrack-Plugin Class Architecture
+## DTrack-Plugin-Class-Architecture
 
 The Class Architecture of the DTrack-Plugin, which controls an Actor, is mainly divided into three parts (from right to left):
 
@@ -44,7 +44,7 @@ To swap out the two buffers, so that the Plugin can use the new data, there has 
 
 <sup>2</sup>   There has been a bug, where targets not being visible made the connected object inside Unreal wiggle around. This bug got solved by not writing new data into the injected data-buffer.
 
-### Data (Buffer) Structure
+### Data-Structure
 
 To get an overview of how the structure looks like, see:
 
@@ -53,10 +53,7 @@ To get an overview of how the structure looks like, see:
 
 
 
-
-
-
-## Space Conversion
+## Space-Conversion
 
 ### Rotations
 For converting between spaces a similar concept from https://www.geometrictools.com/Documentation/ConvertingBetweenCoordinateSystems.pdf has been used.
@@ -66,10 +63,6 @@ This is done by flipping one axis direction, namely the z-axis (-Z).
 
 ### Locations
 Also the units of DTrack and Unreal differ. In DTrack the unit of [cm] is used, whereas in Unreal the unit [mm] is used.
-
-
-
-
 
 
 
@@ -106,10 +99,11 @@ As depicted in the image below, the DTrack model of a human left hand.
 Only problem is, that DTrack does not provide the angle between inner phalanx to backOfHand. These can be calculated as follows:
 
 For the Right Hand:
-```
+
+```c++
 FQuat adaptedFingerTipQuat =
 	handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
-	* FQuat(FRotator(0.f, -90.f, 90.f))		// rotatoe CCW 90 grad um X (Roll) & rotate CCW 90 grad um Z (Yaw)
+	* FQuat(FRotator(0.f, -90.f, 90.f))	// rotatoe CCW 90 grad um X (Roll) & rotate CCW 90 grad um Z (Yaw)
 ;
 
 const FRotator adaptedFingerTipRotator = adaptedFingerTipQuat.Rotator();
@@ -141,6 +135,9 @@ finger.m_inner_middle_phalanx_rotator = finger.m_inner_middle_phalanx_quater.Rot
 finger.m_hand_inner_phalanx_rotator   = finger.m_hand_inner_phalanx_quater.Rotator();	// rotatorInner
 ```
 
+
+
+
 ### Approaches
 
 #### Applying the DTrack provided angles to all the effectors in the kinematic chain
@@ -160,14 +157,22 @@ But for Unreal that location is at the base of the hand.
 
 So to get the same location corresponding to the DTrack one in Unreal you need to know Unreal's offset from base to index finger. Following code does that:
 
-```FVector relativeDBackOfHand = locationIndexFingerBase - locationBackOfHand;```
+```c++
+FVector relativeDBackOfHand = locationIndexFingerBase - locationBackOfHand;
+```
  
 The position of the end effector (here: tip of the index finger) is calculate as following:
 
-```FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand;```
+```c++
+FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand;
+```
 
 
-## Additional Infos:
 
-![wiki Quaternion](https://wiki.beyondunreal.com/Quaternion)
-![Converting Between Coordinate Systems](../../images/ConvertingBetweenCoordinateSystems.pdf)
+
+
+## Additional-Infos
+
+* ![wiki Quaternion](https://wiki.beyondunreal.com/Quaternion)
+
+* ![Converting Between Coordinate Systems](../../images/ConvertingBetweenCoordinateSystems.pdf)
