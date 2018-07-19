@@ -85,23 +85,23 @@ The Unreal Mesh uses a different coordinate system as the one used by DTrack.
 
 As one can see in the image above. The Unreal Mesh of the Right Hand has the positive X direction pointing to the base of the finger and Y-Axis pointing downwards. As this is a Left Handed Coordinate-System, the Z-Axis is pointing to the left.
 
+![DTrack model of a human hand right](../../images/DTrack_model_of_human_right.png)
+
+You can see the DTrack model of a human right hand as depicted in above.
+It doesn't matter whether left or right hand the positive X-Axis is always orientated along the finger.
+Here, for the back of the hand, the positive Z-Axis is pointing down. Whereas, for the phalanxes the positive Z-Axis is pointing upwards.
+
 #### Left Hand
+
 ![Unreal model of a human hand left](../../images/UE_Hand_Left.png)
 
 Whereas, for the left hand Unreal uses a LHS coordinate system, where the X-Axis is pointing down along the finger, Y-Axis is pointing upwards and the Z-Axis is pointing to the left.
 
-
-
-
-As depicted in the image below, the DTrack model of a human left hand.
 ![DTrack model of a human hand left](../../images/DTrack_model_of_human_hand_left.png)
 
+As depicted in the image below, the DTrack model of a human left hand.
 
-You can see the DTrack model of a human right hand as depicted in ....
-It doesn't matter whether left or right hand the positive X-Axis is always orientated along the finger.
-Here, for the back of the hand, the positive Z-Axis is pointing down. Whereas, for the phalanxes the positive Z-Axis is pointing upwards.
 
-![DTrack model of a human hand right](../../images/DTrack_model_of_human_right.png)
 
 
 ### Applying the DTrack provided angles to all the effectors in the kinematic chain
