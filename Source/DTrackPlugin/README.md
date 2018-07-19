@@ -1,16 +1,16 @@
 # DTrackPlugin Dev-Notes
 
 ## Table of Contents
-1. [About](#about)
-2. [DTrack-Plugin Class Architecture](#DTrack-Plugin Class Architecture)
-3. [Data-Buffer](#Data-Buffer)
-3.1.   -> [Double-Buffering](#Double-Buffering)
-3.2.  -> [Data (Buffer) Structure](#Data (Buffer) Structure)
-4. [Space Conversion](#Space Conversion)
-4.1.   -> [Rotations](#Rotations)
-4.2.   -> [Locations](#Locations)
-5. [Fingertracking](#Fingertracking)
-6. [Additional Infos](#Additional Infos)
+[1. About](#1. About)
+[2. DTrack-Plugin Class Architecture](#2. DTrack-Plugin Class Architecture)
+[3. Data-Buffer](#3. Data-Buffer)
+  -> [3.1. Double-Buffering](#3.1. Double-Buffering)
+  -> [3.2. Data (Buffer) Structure](#3.2. Data (Buffer) Structure)
+[4. Space Conversion](#4. Space Conversion)
+  -> [4.1. Rotations](#4.1. Rotations)
+  -> [4.2. Locations](#4.2. Locations)
+[5. Fingertracking](#5. Fingertracking)
+[6. Additional Infos](#6. Additional Infos)
 
 ## 1. About
 
@@ -155,7 +155,7 @@ The position of the end effector (here: tip of the index finger) is calculate as
 `FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand;`
 
 
-## 6. Additional Infos:
+## 6. Additional Infos
 
 https://wiki.beyondunreal.com/Quaternion
 
