@@ -43,6 +43,11 @@ To get a overview of how the structure looks like, see:
 ![DTrack-Plugin DataBuffer Structure](../../images/DataBufferStructure.png)
 
 
+
+
+
+
+
 ## Space Conversion
 
 # Rotations
@@ -55,16 +60,23 @@ This is done by flipping one axis direction, namely the z-axis (-Z).
 Also the units of DTrack and Unreal differ. In DTrack the unit of [cm] is used, whereas in Unreal the unit [mm] is used.
 
 
+
+
+
+![Unreal model of a human hand right](../../images/UE_Hand_Right.png)
+
+
 ## Fingertracking
 
 As depicted in the image below, the DTrack model of a human left hand.
-![DTrack model of a human left hand](../../images/DTrack model of a human left hand.png)
+![DTrack model of a human hand left](../../images/DTrack_model_of_human_hand_left.png)
+
 
 You can see the DTrack model of a human right hand as depicted in ....
 It doesn't matter whether left or right hand the positive X-Axis is always orientated along the finger.
 Here, for the back of the hand, the positive Z-Axis is pointing down. Whereas, for the phalanxes the positive Z-Axis is pointing upwards.
 
-![DTrack model of a human right hand](../../images/DTrack model of a human right hand.png)
+![DTrack model of a human hand right](../../images/DTrack_model_of_human_right.png)
 
 
 ### Applying the DTrack provided angles to all the effectors in the kinematic chain
