@@ -2,15 +2,15 @@
 
 ## Table of Contents
 1. [About](#about)
-2. [DTrack-Plugin_Class_Architecture](#DTrack-Plugin Class Architecture)
-3. [Data-Buffer](#Data-Buffer)
-3.1.  -> [Double-Buffering](#Double-Buffering)
-3.2.  -> [Data-Structure](#Data-Structure)
-4. [Space Conversion](#Space Conversion)
-4.1.  -> [Rotations](#Rotations)
-4.2.  -> [Locations](#Locations)
-5. [Fingertracking](#Fingertracking)
-6. [Additional Infos](#Additional Infos)
+2. [DTrack-Plugin Class Architecture](#dTrack-Plugin Class Architecture)
+3. [Data-Buffer](#data-Buffer)
+4.  -> [Double-Buffering](#double-Buffering)
+5.  -> [Data-Structure](#data-Structure)
+6. [Space Conversion](#space Conversion)
+7.  -> [Rotations](#rotations)
+8.  -> [Locations](#locations)
+9. [Fingertracking](#fingertracking)
+10. [Additional Infos](#additional Infos)
 
 ## About
 
