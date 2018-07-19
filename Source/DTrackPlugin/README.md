@@ -2,15 +2,15 @@
 
 ## Table of Contents
 1. [About](#about)
-2. [DTrack-Plugin Class Architecture](#dTrack-Plugin Class Architecture)
+2. [DTrack-Plugin Class Architecture](#dtrack-plugin class architecture)
 3. [Data-Buffer](#data-Buffer)
-4.  -> [Double-Buffering](#double-Buffering)
-5.  -> [Data-Structure](#data-Structure)
-6. [Space Conversion](#space Conversion)
+4.  -> [Double-Buffering](#double-buffering)
+5.  -> [Data-Structure](#data-structure)
+6. [Space Conversion](#space conversion)
 7.  -> [Rotations](#rotations)
 8.  -> [Locations](#locations)
 9. [Fingertracking](#fingertracking)
-10. [Additional Infos](#additional Infos)
+10. [Additional Infos](#additional infos)
 
 ## About
 
@@ -110,7 +110,7 @@ One approach is to get the different angles between the finger bones and apply t
 
 Only problem is, that DTrack does not provide the angle between inner phalanx to backOfHand. These can be calculated as follows:
 
-`
+```
 FRotator rotatorFingerTip = m_coord_converter.from_dtrack_rotation(hand->finger[j].rot);
 finger.m_rotation = FRotator(rotatorFingerTip);
 FQuat fingerTipOrientation(finger.m_rotation);
@@ -130,7 +130,7 @@ FRotator rotatorInner = quatInner.Rotator();
 finger.m_hand_inner_phalanx_angle_pitch = -rotatorInner.Roll - 180.f;
 finger.m_hand_inner_phalanx_angle_yaw = rotatorInner.Yaw - 180.f;
 finger.m_hand_inner_phalanx_angle_roll = rotatorInner.Pitch; // should be zero (unchanged), because its not possible to do a finger twist.
-`
+```
 
 The thumb is a challenge in itself, due to its initial default rotation in UE4. Therefore I added some offset -180.f to the angles in the base bone hand_inner_phalanx_angle.
 
@@ -148,11 +148,11 @@ But for Unreal that location is at the base of the hand.
 
 So to get the same location corresponding to the DTrack one in Unreal you need to know Unreal's offset from base to index finger. Following code does that:
 
-`FVector relativeDBackOfHand = locationIndexFingerBase - locationBackOfHand;`
+```FVector relativeDBackOfHand = locationIndexFingerBase - locationBackOfHand;```
  
 The position of the end effector (here: tip of the index finger) is calculate as following:
 
-`FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand;`
+```FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand;```
 
 
 ## Additional Infos:
