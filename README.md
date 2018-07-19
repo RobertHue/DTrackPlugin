@@ -10,16 +10,16 @@
 5. [Feature Requests](#Feature Requests)
 6. [License](#License)
 
-## 1. About
+## About
 This is a plug-in for the Unreal Engine 4.19 or later with the purpose of native integration of the Advanded Realtime Tracking DTrack and DTrack2 tracking solutions.
 It supports both Blueprint and native C++ usage.
 
 This plug-in includes the official DTrack SDK 2.4.1 in binary form. Its license is identical to this.
 
-## 2. Preconditions
+## Preconditions
 This plugin only supports the Windows 64 bit platform, due to it's precompiled DTrack SDK static library. To use it you need the Unreal Engine 4.19 or later and Microsoft Visual Studio 2015 (Express or Community Edition should suffice). Other platforms are not supported.
 
-## 3. Installation
+## Installation
 To use this, setup your Unreal Project as a C++ Project (This doesn't mean there needs to be only code. The project can still focus on Blueprint usage). In your project's root folder, create a directory named `Plugins` if it is not already there. Then clone or checkout this repository into this folder and regenerate your project. That's all.
 
 For adding the submodule eigen:
@@ -28,7 +28,7 @@ Run ```"submodule update --init --recursive"```
 
 Alternatively run ```"git clone --recursive <project url>"```
 
-## 4. Usage
+## Usage
 Using this functionality is generally focused on enhancing any Actor with tracking information. 
 This can happen in either C++ or Blueprint. There's usually 3 steps involved:
 
@@ -46,7 +46,7 @@ All translations and rotations coming in on the interface will already be tranla
 
 Your tracking data will be treated according to this setting so it must correspond to your room calibration.
 
-### 4.1. Native C++
+### Native C++
 In order to make your project depend on the plugin you may have to add the following to your module's `build.cs` script:
 
 ```csharp
@@ -141,7 +141,7 @@ Before you start your game, select any actor instance of this type and go to the
 
 ![Properties Screenshot](/images/Properties_Page.jpg)
 
-## 4.2. Blueprint
+## Blueprint
 Using this in Blueprints is quite similar. Start by selecting your blueprint actor in the Editor and use Details->Add Component and select `DTrack` in the list. The component will appear similar to the screenshot above. The settings are also the same and you should make them point to your DTrack server.
 
 Then open the Blueprint Editor for your actor. Select "Class Settings" and navigate to the right side of the screen to add the DTrack Interface to your actor. Use 'Add' and select `DTrackInterface`. Compile and save your blueprint to continue.
@@ -154,7 +154,7 @@ Once this is done, you can implement any of the events the C++ actor could imple
 
 When using, obviously make sure the plugin is loaded and you don't accidently unload it. Also, make sure your Actor is marked as movable.
 
-## 5. Feature Requests
+## Feature Requests
 Check out the Trello board to view new features, fixes and TODO's: 
 
 [![DTrack-Plugin Trello](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin)](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin "DTrack-Plugin Trello - Click to View!")
@@ -168,7 +168,7 @@ Check out the Trello board to view new features, fixes and TODO's:
 For Development(Architecture and Notes about Features), see the following link: 
 [Architecture and Development Notes](Source/DTrackPlugin)
 
-## 6. License
+## License
 Copyright (c) 2017, Advanced Realtime Tracking GmbH
 All rights reserved.
 

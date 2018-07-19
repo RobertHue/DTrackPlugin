@@ -2,19 +2,19 @@
 
 ## Table of Contents
 1. [About](#about)
-2. [DTrack-Plugin Class Architecture](#DTrack-Plugin Class Architecture)
+2. [DTrack-Plugin_Class_Architecture](#DTrack-Plugin Class Architecture)
 3. [Data-Buffer](#Data-Buffer)
-3.1.   -> [Double-Buffering](#Double-Buffering)
-3.2.  -> [Data (Buffer) Structure](#Data (Buffer) Structure)
+3.1.  -> [Double-Buffering](#Double-Buffering)
+3.2.  -> [Data-Structure](#Data-Structure)
 4. [Space Conversion](#Space Conversion)
-4.1.   -> [Rotations](#Rotations)
-4.2.   -> [Locations](#Locations)
+4.1.  -> [Rotations](#Rotations)
+4.2.  -> [Locations](#Locations)
 5. [Fingertracking](#Fingertracking)
 6. [Additional Infos](#Additional Infos)
 
-## 1. About
+## About
 
-## 2. DTrack-Plugin Class Architecture
+## DTrack-Plugin Class Architecture
 
 The Class Architecture of the DTrack-Plugin, which controls an Actor, is mainly divided into three parts:
 
@@ -30,11 +30,11 @@ After this is done it places ("injects") the newly converted data into a data-bu
 
 ![DTrack-Plugin UML Class Diagram](../../images/DTrackPlugin_UML_ClassDiagram.png)
 
-## 3. Data-Buffer
+## Data-Buffer
 
 To store the data coming from DTrack for the different Game-Actors to pick up<sup>1</sup>, there needs to be a shared memory between DTrackPollThread and the game itself.
 
-### 3.1. Double-Buffering
+### Double-Buffering
 
 The DTrackPollThread does not write directly into the currently used data-buffer of the UDTrackComponent. It instead writes into a second data-buffer<sup>2</sup> (called: `m_injected`). This has the advantage that the Plugin can still process the data on the first data-buffer (here: m_front). Meanwhile the DTrackPollThread can inject its new data into the m_injected data-buffer.
 
@@ -44,7 +44,7 @@ To swap out the two buffers, so that the Plugin can use the new data, there has 
 
 <sup>2</sup>   There has been a bug, where targets not being visible made the connected object inside unreal wiggle around. This bug got solved by not writing new data into the injected data-buffer.
 
-### 3.2. Data (Buffer) Structure
+### Data (Buffer) Structure
 
 To get a overview of how the structure looks like, see:
 
@@ -56,15 +56,15 @@ To get a overview of how the structure looks like, see:
 
 
 
-## 4. Space Conversion
+## Space Conversion
 
-### 4.1. Rotations
+### Rotations
 For converting between spaces a similar concept from https://www.geometrictools.com/Documentation/ConvertingBetweenCoordinateSystems.pdf has been used.
 
 To convert from right-handed coordinate system (DTrack) to left-handed coordinate system (Unreal-Engine 4).
 This is done by flipping one axis direction, namely the z-axis (-Z).
 
-### 4.2. Locations
+### Locations
 Also the units of DTrack and Unreal differ. In DTrack the unit of [cm] is used, whereas in Unreal the unit [mm] is used.
 
 
@@ -73,7 +73,7 @@ Also the units of DTrack and Unreal differ. In DTrack the unit of [cm] is used, 
 
 
 
-## 5. Fingertracking
+## Fingertracking
 
 ### Unreal Mesh Hand:
 
@@ -155,7 +155,7 @@ The position of the end effector (here: tip of the index finger) is calculate as
 `FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand;`
 
 
-## 6. Additional Infos:
+## Additional Infos:
 
 https://wiki.beyondunreal.com/Quaternion
 
