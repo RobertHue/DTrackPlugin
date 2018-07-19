@@ -63,10 +63,27 @@ Also the units of DTrack and Unreal differ. In DTrack the unit of [cm] is used, 
 
 
 
-![Unreal model of a human hand right](../../images/UE_Hand_Right.png)
 
 
 ## Fingertracking
+
+### Unreal Mesh Hand:
+
+The Unreal Mesh uses a different coordinate system as the one used by DTrack. 
+
+#### Right Hand
+
+![Unreal model of a human hand right](../../images/UE_Hand_Right.png)
+
+As one can see in the image above. The Unreal Mesh of the Right Hand has the positive X direction pointing to the base of the finger and Y-Axis pointing downwards. As this is a Left Handed Coordinate-System, the Z-Axis is pointing to the left.
+
+#### Left Hand
+![Unreal model of a human hand left](../../images/UE_Hand_Left.png)
+
+Whereas, for the left hand Unreal uses a LHS coordinate system, where the X-Axis is pointing down along the finger, Y-Axis is pointing upwards and the Z-Axis is pointing to the left.
+
+
+
 
 As depicted in the image below, the DTrack model of a human left hand.
 ![DTrack model of a human hand left](../../images/DTrack_model_of_human_hand_left.png)
