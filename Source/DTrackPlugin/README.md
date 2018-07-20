@@ -117,11 +117,11 @@ Here, to get from DTrack bone coordinate system to Unreal's you first need to ap
 
 Only problem is, that DTrack does not provide the angle between inner phalanx to backOfHand. These can be analytically calculated backwards as follows by doing following:
 
-1.) Converting the Fingertip into a Unreal-Rotation as mentioned in "Right Hand"
-2.) Transforming the Rotation (FRotator) into a quaternion (FQuat), which can be used to represent Rotations too, but without the problem of gimbal locks.
-3.) Setting up two quaternions (FQuat) for the Rotations between the bones, which are defined by the angles Gamma (middle_outer_phalanx_angle) and Beta (inner_middle_phalanx_angle) and an Axis of Rotation, which is retrieved by the quaternion in step #2
-4.) First apply the Quaternion from Step #2 and then apply the Quaternion from Step #3, this leads to a new Quaternion, representing the parent bone in the kinematic chain, until the Hand-Inner-Quaternion is reached.
-5.) The Hand-Inner-Quaternion can be converted into a FRotator where the three parts of it are the angles in degrees around the global axes.
+1. Converting the Fingertip into a Unreal-Rotation as mentioned in "Right Hand"
+2. Transforming the Rotation (FRotator) into a quaternion (FQuat), which can be used to represent Rotations too, but without the problem of gimbal locks.
+3. Setting up two quaternions (FQuat) for the Rotations between the bones, which are defined by the angles Gamma (middle_outer_phalanx_angle) and Beta (inner_middle_phalanx_angle) and an Axis of Rotation, which is retrieved by the quaternion in step #2
+4. First apply the Quaternion from Step #2 and then apply the Quaternion from Step #3, this leads to a new Quaternion, representing the parent bone in the kinematic chain, until the Hand-Inner-Quaternion is reached.
+5. The Hand-Inner-Quaternion can be converted into a FRotator where the three parts of it are the angles in degrees around the global axes.
 
 For C++-Code, see following snippet for the right hand:
 
