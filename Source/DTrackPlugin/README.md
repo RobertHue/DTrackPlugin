@@ -1,4 +1,4 @@
-# DTrackPlugin Dev-Notes
+# DTrackPlugin Concepts & Dev-Notes
 
 ## Table of Contents
 1. [About](#about)
@@ -46,7 +46,7 @@ To swap out the two buffers, so that the Plugin can use the new data, there has 
 
 ### Data-Structure
 
-To get an overview of how the structure looks like, see:
+To get an overview of how the data-structure of one of the data-buffers look like, see:
 
 ![DTrack-Plugin DataBuffer Structure](../../images/DataBufferStructure.png)
 
@@ -80,25 +80,50 @@ As one can see in the image above. The Unreal Mesh of the Right Hand has the pos
 
 ![DTrack model of a human hand right](../../images/DTrack_model_of_human_right.png)
 
-You can see the DTrack model of a human right hand as depicted in above.
+You can see the DTrack model of a human right hand as depicted above.
 It doesn't matter whether left or right hand the positive X-Axis is always orientated along the finger.
 Here, for the back of the hand, the positive Z-Axis is pointing down. Whereas, for the phalanxes the positive Z-Axis is pointing upwards.
+
+So that means to get from DTrack bone coordinate system to Unreal's you first need to apply a Rotation of -90° around Z-Axis (Yaw) and a Rotation of 90° around X-Axis (Roll). In Unreal-C++ this can be done by multiplying by right side with an FQuat(FRotator(0.f, -90.f, 90.f)). Afterwards you need to apply the quaternion of the bone FRotator but with swapped X and Y axes, for DTrack's `fingerTip` or in Unreal the `index_03_r` see the following C++-snippet:
+
+```c++
+// convert the DTrack handRoomRotation to the unreal adapted bone rotation of "hand_r"
+FQuat handRoomRotationQuat = m_space_converter.from_dtrack_rotation(hand->rot).Quaternion();
+			
+// swaps the X with the Y axis, if the EDTrackCoordinateSystemType is CST_Unreal_Adapted
+const FRotator convertedFingerTipRotator = m_space_converter.from_dtrack_rotation(hand->finger[j].rot); 
+
+FQuat adaptedFingerTipQuat =
+	handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
+	* FQuat(FRotator(0.f, -90.f, 90.f))	// rotatoe CCW 90 grad um X (Roll) & rotate CCW 90 grad um Z (Yaw)
+;
+```
 
 #### Left Hand
 
 ![Unreal model of a human hand left](../../images/UE_Hand_Left.png)
 
-Whereas, for the left hand Unreal uses a LHS coordinate system, where the X-Axis is pointing down along the finger, Y-Axis is pointing upwards and the Z-Axis is pointing to the left.
+Whereas, for the left hand Unreal uses a LHS coordinate system, where the X-Axis is pointing down along the finger (just like in DTrack), Y-Axis is pointing upwards and the Z-Axis is pointing to the left.
 
 ![DTrack model of a human hand left](../../images/DTrack_model_of_human_hand_left.png)
 
-As depicted in the image below, the DTrack model of a human left hand.
+You can see the DTrack model of a human left hand as depicted above.
+It doesn't matter whether left or right hand the positive X-Axis is always orientated along the finger.
+Here, for the back of the hand, the positive Z-Axis is pointing always up. Whereas, for the phalanxes the positive Z-Axis is pointing upwards.
+
+Here, to get from DTrack bone coordinate system to Unreal's you first need to apply a Rotation of 90° around Z-Axis (Yaw) and a Rotation of -90° around X-Axis (Roll). In Unreal-C++ this can be done by multiplying by right side with an FQuat(FRotator(0.f, -90.f, 90.f)). Afterwards you need to apply the quaternion of the bone FRotator but with swapped X and Y axes.
 
 ### Getting the Hand-Inner-Angle
 
-Only problem is, that DTrack does not provide the angle between inner phalanx to backOfHand. These can be calculated as follows:
+Only problem is, that DTrack does not provide the angle between inner phalanx to backOfHand. These can be analytically calculated backwards as follows by doing following:
 
-For the Right Hand:
+1.) Converting the Fingertip into a Unreal-Rotation as mentioned in "Right Hand"
+2.) Transforming the Rotation (FRotator) into a quaternion (FQuat), which can be used to represent Rotations too, but without the problem of gimbal locks.
+3.) Setting up two quaternions (FQuat) for the Rotations between the bones, which are defined by the angles Gamma (middle_outer_phalanx_angle) and Beta (inner_middle_phalanx_angle) and an Axis of Rotation, which is retrieved by the quaternion in step #2
+4.) First apply the Quaternion from Step #2 and then apply the Quaternion from Step #3, this leads to a new Quaternion, representing the parent bone in the kinematic chain, until the Hand-Inner-Quaternion is reached.
+5.) The Hand-Inner-Quaternion can be converted into a FRotator where the three parts of it are the angles in degrees around the global axes.
+
+For C++-Code, see following snippet for the right hand:
 
 ```c++
 FQuat adaptedFingerTipQuat =
@@ -173,6 +198,5 @@ FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand
 
 ## Additional-Infos
 
-* ![wiki Quaternion](https://wiki.beyondunreal.com/Quaternion)
-
+* https://wiki.beyondunreal.com/Quaternion
 * ![Converting Between Coordinate Systems](../../images/ConvertingBetweenCoordinateSystems.pdf)

@@ -135,7 +135,7 @@ void AMyDTrackUsingActor::OnFlystickJoystick_Implementation(const int32 Flystick
 
 ```
 
-To give some working Examples, there has been made some for `Fingertracking` for left and right hand (see: MyPoseableMesh.h) and also `Body Tracking` (see: MySceneComponent.h).
+To give some working Examples, there has been made some for `Fingertracking` for right hand (see: MyPoseableMesh.h) and also `Body Tracking` (see: MySceneComponent.h).
 
 Before you start your game, select any actor instance of this type and go to the properties window to set your server settings.
 
