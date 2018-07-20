@@ -192,6 +192,14 @@ The following image shows the Coordinate System in Unreal and the corresponding 
 ![Coord System](../../images/CoordSystem.png)
 
 
+
+## How to change the Skeletal Bones in UE4 anyway?
+
+When applying bones to the Skeleton of Unreal the question arises how the Skeletal Bones in any Skeletal Mesh of Unreal can be accessed (rotation and location) anyway. This can be done either by having the UPoseableMeshComponent or the USkeletalMeshComponent. Both have advantages and disadvantages I added to the image below, see:
+
+![Skeletal Access in UE4](../../images/UE_SkeletalAccess.png)
+
+
 ## Additional-Infos
 
 * https://wiki.beyondunreal.com/Quaternion
