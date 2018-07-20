@@ -10,7 +10,7 @@
 7.  -> [Rotations](#rotations)
 8.  -> [Locations](#locations)
 9. [Fingertracking](#fingertracking)
-10. [Coordinate System](#coordinate system)
+10. [Coordinate-System](#coordinate-system)
 11. [Additional-Infos](#additional-infos)
 
 ## About
@@ -197,9 +197,11 @@ FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand
 
 
 
-### Coordinate System
 
-The Coordinate System of Unreal -- as already mentioned -- is a left handed coordinate system. What is worth noting is, that the orientation of rotation is different for the X- and Y-Axis. If you place your left hand with the thumb pointing along where the arrow is pointing, then the others finger you are pointing to the positive rotation around that Axis.
+
+### Coordinate-System
+
+The Coordinate System of Unreal -- as already mentioned -- is a left handed coordinate system. What is worth noting is, that the orientation of rotation is different for the X- and Y-Axis. If you place your left hand with the thumb pointing along where the arrow is pointing, then the others finger you are pointing to the positive rotation around that Axis, except for the X- and Y-Axis.
 
 The following image shows the Coordinate System in Unreal and the corresponding orientation of rotation:
 

@@ -5,10 +5,10 @@
 2. [Preconditions](#preconditions)
 3. [Installation](#installation)
 4. [Usage](#usage)
-4.1.   -> [Native C++](#native-c)
-4.2.   -> [Blueprint](#blueprint)
-5. [Feature Requests](#feature requests)
-6. [License](#license)
+5.   -> [Native C++](#native-c)
+6.   -> [Blueprint](#blueprint)
+7. [Feature Requests](#feature)
+8. [License](#license)
 
 ## About
 This is a plug-in for the Unreal Engine 4.19 or later with the purpose of native integration of the Advanded Realtime Tracking DTrack and DTrack2 tracking solutions.
