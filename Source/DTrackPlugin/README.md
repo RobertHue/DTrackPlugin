@@ -43,7 +43,7 @@ To swap out the two buffers, so that the Plugin can use the new data, there has 
 
 <sup>1</sup>   In reality the Actor does not pick up anything, whereas the DTrackComponent does a callback on the Actor's implemented IDTrackInterface-Method
 
-<sup>2</sup>   There has been a bug, where targets not being visible made the connected object inside Unreal wiggle around. This bug got solved by not writing new data into the injected data-buffer.
+<sup>2</sup>   There has been a bug, where targets not being visible made the connected object inside Unreal wiggle around. This bug got solved by not writing new data into the injected data-buffer, when the quality value of the registered target is Zero (0).
 
 ### Data-Structure
 
