@@ -161,12 +161,27 @@ Check out the Trello board to view new features, fixes and TODO's:
 
 ### TODO's:
 
-* Due to unity's popularity a port to it would be appreciated.
+* Due to unity's popularity a port to it would be appreciated. But to be honest... Do we really want to adapt to the engine all the time? Maybe the OpenXR standard (by Khronos Group) offers better opportunities. Standardize all of the VR devices.
+
 * Request to Unreal that UPoseableMeshComponent needs a working Collision with other Meshes (static).
 * Request to Unreal that USkeletalMeshComponent needs a way to alter bone location and rotation inside the SkeletalMesh.
 
 For Development(Architecture and Notes about Features), see the following link: 
+
 [Architecture and Development Notes](Source/DTrackPlugin)
+
+OpenXR: Application aims at single target and not at different VR-Devices...
+X = V + R
+just define openXR device plugins and it should work with the Game using openXR
+https://www.youtube.com/watch?v=U-CpA5d9MjI#t=50m00s
+
+OpenXR was announced by the Khronos Group on February 27 2017 during the GDC 2017.[1][2][3][4]
+Contents and is still being developed...
+
+The standard will comprise two parts:
+
+* An API aimed for the application developers
+* A Device Layer, aimed for the Virtual reality or Augmented reality hardware, presenting an abstraction interface with the device itself
 
 ## License
 Copyright (c) 2017, Advanced Realtime Tracking GmbH
