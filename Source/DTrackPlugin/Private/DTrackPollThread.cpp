@@ -385,7 +385,8 @@ void FDTrackPollThread::handle_hands() {
 				// in case of left hand
 				FQuat adaptedFingerTipQuat =
 					handRoomRotationQuat * convertedFingerTipRotator.Quaternion()
-					* FQuat(FRotator(0.f, -90.f, 90.f))		// rotatoe CCW 90 grad um X (Roll) & rotate CCW 90 grad um Z (Yaw)
+					* FQuat(FRotator(0.f, -90.f, 90.f))
+					// rotate CCW 90 grad um X (Roll) & rotate CCW 90 grad um Z (Yaw)
 				;
 
 				//if (hand->lr == 0) { // in case of left hand

@@ -7,7 +7,7 @@
 4. [Usage](#usage)
 4.1.   -> [Native C++](#native-c)
 4.2.   -> [Blueprint](#blueprint)
-5. [Feature Requests](#feature Requests)
+5. [Feature Requests](#feature requests)
 6. [License](#license)
 
 ## About
