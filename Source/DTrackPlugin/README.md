@@ -170,36 +170,20 @@ finger.m_hand_inner_phalanx_rotator   = finger.m_hand_inner_phalanx_quater.Rotat
 
 #### Applying the DTrack provided angles to all the effectors in the kinematic chain
 
-One approach is to get the different angles or rotations between the finger bones and apply them to the Unreal skeleton. A Disadvantage in this solution is, that in case your fingers don't have the lengths of the Unreal skeleton fingers, then your end-effector position may be off. Unless you apply the DTrack-calculated finger lengths to the Unreal skeleton ones, which will create a finger mesh being unproportional. So we don't want that.
+One approach -- which is used here -- is to get the different angles or rotations between the finger bones and apply them to the Unreal skeleton. 
+
+A Disadvantage in this solution is, that in case your fingers don't have the lengths of the Unreal skeleton fingers, then your end-effector position may be off. Unless you apply the DTrack-calculated finger lengths to the Unreal skeleton ones, which will create a finger mesh being unproportional. So we don't want that.
 
 #### Applying DTrack end effectors position & rotation and letting Unreal do the IK
 
 Another approach is to use the DTrack position and rotation for the finger tips (the end effectors) and letting Unreal do the Inverse Kinematics (IK) calculations.
 
-Every manufacturer can define their bone-lengths (hence the joint-locations) at their own demand. Also some artists can define their bones with offsets in their custom Skeleton.
- 
-So a challenge here is, that in DTrack the fingerTip locations are relative to the back of the hand, whose coordinate system is placed where the index finger begins, as shown in the picture below:
-
-
-But for Unreal that location is at the base of the hand. 
-
-So to get the same location corresponding to the DTrack one in Unreal you need to know Unreal's offset from base to index finger. Following code does that:
-
-```c++
-FVector relativeDBackOfHand = locationIndexFingerBase - locationBackOfHand;
-```
- 
-The position of the end effector (here: tip of the index finger) is calculate as following:
-
-```c++
-FVector relativeDTipOfIndexFinger = relLocationOfFingerTip + relativeDBackOfHand;
-```
+Every manufacturer can define their bone-lengths (hence the joint-locations) at their own demand. Also some artists can define their bones with offsets in their custom Skeleton. So an IK with the UE-Skeleton would be a good idea.
 
 
 
 
-
-### Coordinate-System
+## Coordinate-System
 
 The Coordinate System of Unreal -- as already mentioned -- is a left handed coordinate system. What is worth noting is, that the orientation of rotation is different for the X- and Y-Axis. If you place your left hand with the thumb pointing along where the arrow is pointing, then the others finger you are pointing to the positive rotation around that Axis, except for the X- and Y-Axis.
 

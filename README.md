@@ -7,7 +7,7 @@
 4. [Usage](#usage)
 5.   -> [Native C++](#native-c)
 6.   -> [Blueprint](#blueprint)
-7. [Feature Requests](#feature)
+7. [Feature-Requests](#feature-requests)
 8. [License](#license)
 
 ## About
@@ -154,7 +154,7 @@ Once this is done, you can implement any of the events the C++ actor could imple
 
 When using, obviously make sure the plugin is loaded and you don't accidently unload it. Also, make sure your Actor is marked as movable.
 
-## Feature Requests
+## Feature-Requests
 Check out the Trello board to view new features, fixes and TODO's: 
 
 [![DTrack-Plugin Trello](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin)](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin "DTrack-Plugin Trello - Click to View!")
