@@ -7,7 +7,7 @@
 4. [Usage](#usage)
 5.   -> [Native C++](#native-c)
 6.   -> [Blueprint](#blueprint)
-7. [Feature-Requests](#feature-requests)
+7. [For_Developers](#for_developers)
 8. [License](#license)
 
 ## About
@@ -154,34 +154,21 @@ Once this is done, you can implement any of the events the C++ actor could imple
 
 When using, obviously make sure the plugin is loaded and you don't accidently unload it. Also, make sure your Actor is marked as movable.
 
-## Feature-Requests
-Check out the Trello board to view new features, fixes and TODO's: 
+## For_Developers
 
+For Development(Architecture and Notes about Features), see the following link:
+[Architecture and Development Notes](Source/DTrackPlugin)
+
+Check out the Trello board to view new features, fixes and TODO's: 
 [![DTrack-Plugin Trello](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin)](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin "DTrack-Plugin Trello - Click to View!")
 
 ### TODO's:
 
-* Due to unity's popularity a port to it would be appreciated. But to be honest... Do we really want to adapt to the engine all the time? Maybe the OpenXR standard (by Khronos Group) offers better opportunities. Standardize all of the VR devices.
-
+* Due to unity's popularity a port to it would be appreciated. But, do we really want to adapt to the engine all the time? Maybe the OpenXR standard (by Khronos Group) offers better opportunities. Standardize all of the VR devices.
 * Request to Unreal that UPoseableMeshComponent needs a working Collision with other Meshes (static).
 * Request to Unreal that USkeletalMeshComponent needs a way to alter bone location and rotation inside the SkeletalMesh.
 
-For Development(Architecture and Notes about Features), see the following link: 
 
-[Architecture and Development Notes](Source/DTrackPlugin)
-
-OpenXR: Application aims at single target and not at different VR-Devices...
-X = V + R
-just define openXR device plugins and it should work with the Game using openXR
-https://www.youtube.com/watch?v=U-CpA5d9MjI#t=50m00s
-
-OpenXR was announced by the Khronos Group on February 27 2017 during the GDC 2017.[1][2][3][4]
-Contents and is still being developed...
-
-The standard will comprise two parts:
-
-* An API aimed for the application developers
-* A Device Layer, aimed for the Virtual reality or Augmented reality hardware, presenting an abstraction interface with the device itself
 
 ## License
 Copyright (c) 2017, Advanced Realtime Tracking GmbH
