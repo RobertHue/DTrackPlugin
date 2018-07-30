@@ -157,9 +157,11 @@ When using, obviously make sure the plugin is loaded and you don't accidently un
 ## For_Developers
 
 For Development(Architecture and Notes about Features), see the following link:
-[Architecture and Development Notes](Source/DTrackPlugin)
+
+[![Architecture and Development Notes](/images/devNotes_thumbnail.jpg)](Source/DTrackPlugin)
 
 Check out the Trello board to view new features, fixes and TODO's: 
+
 [![DTrack-Plugin Trello](/images/trello_thumbnail.jpg)](https://trello.com/b/2PF5fd3t/unreal-dtrack-plugin "DTrack-Plugin Trello - Click to View!")
 
 ### TODO's:
