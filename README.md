@@ -169,10 +169,20 @@ Check out the Trello board to see new features, fixes and TODO's:
 
 ### TODO's:
 
-* Due to unity's popularity a port to it would be appreciated. But, do we really want to adapt to the engine all the time? Maybe the OpenXR standard (by Khronos Group) offers better opportunities. Standardize all of the VR devices.
-* Currently a port to SteamVR (by valve) is possible and viable, due SteamVR enabling Skeletal Input (see: https://steamcommunity.com/games/250820/announcements/detail/1690421280625220068)
-Also see https://partner.steamgames.com/vrlicensing and https://steamcommunity.com/app/507090/discussions/0/360671247404603033/ for further information (no royalties or fees).
-* Another Solution would be a port to OpenVR (https://github.com/ValveSoftware/openvr)
+* Due to unity's popularity a port to it would be appreciated. But, do we really want to adapt to the engine all the time? Maybe the OpenXR standard (by Khronos Group) offers better opportunities. Standardize all of the VR devices. But due to it still being developed on that solution is not available.
+* Currently a port to OpenVR (https://github.com/ValveSoftware/openvr) is possible and viable.
+
+For more information on it see:
+https://github.com/ValveSoftware/openvr/wiki/Driver-Documentation
+
+For devices with buttons, triggers, joysticks, and other kinds of input controls, please refer to:
+https://github.com/ValveSoftware/openvr/wiki/IVRDriverInput-Overview
+
+For devices that wish to provide animation data through the Skeletal Input system, please refer to:
+https://github.com/ValveSoftware/openvr/wiki/Creating-a-Skeletal-Input-Driver
+https://github.com/ValveSoftware/openvr/wiki/Hand-Skeleton
+
+
 
 * Request to Unreal that UPoseableMeshComponent needs a working Collision with other Meshes (static).
 * Request to Unreal that USkeletalMeshComponent needs a way to alter bone location and rotation inside the SkeletalMesh.
