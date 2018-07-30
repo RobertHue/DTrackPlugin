@@ -12,8 +12,11 @@
 
 ## About
 This is a plug-in for the Unreal Engine 4.19 or later with the purpose of native integration of the Advanded Realtime Tracking DTrack and DTrack2 tracking solutions.
-It supports both Blueprint and native C++ usage.
 
+It enables you to use a DTrack Tracking System (i.e. ART CoCap target set or other targets) to control a virtual character inside Unreal in realtime.
+
+### Sidenotes:
+It supports both Blueprint and native C++ usage.
 This plug-in includes the official DTrack SDK 2.4.1 in binary form. Its license is identical to this.
 
 ## Preconditions
@@ -167,6 +170,10 @@ Check out the Trello board to see new features, fixes and TODO's:
 ### TODO's:
 
 * Due to unity's popularity a port to it would be appreciated. But, do we really want to adapt to the engine all the time? Maybe the OpenXR standard (by Khronos Group) offers better opportunities. Standardize all of the VR devices.
+* Currently a port to SteamVR (by valve) is possible and viable, due SteamVR enabling Skeletal Input (see: https://steamcommunity.com/games/250820/announcements/detail/1690421280625220068)
+Also see https://partner.steamgames.com/vrlicensing and https://steamcommunity.com/app/507090/discussions/0/360671247404603033/ for further information (no royalties or fees).
+* Another Solution would be a port to OpenVR (https://github.com/ValveSoftware/openvr)
+
 * Request to Unreal that UPoseableMeshComponent needs a working Collision with other Meshes (static).
 * Request to Unreal that USkeletalMeshComponent needs a way to alter bone location and rotation inside the SkeletalMesh.
 
